@@ -1,17 +1,35 @@
-import logo from './logo.svg';
-import './App.css';
-import PlayerBanner from './components/playerBanner';
-import React, { Component } from 'react';
+import logo from "./logo.svg";
+import "./App.css";
+import PlayerBanner from "./components/playerBanner";
+import Players from "./components/players";
+import React, { Component } from "react";
 
 class App extends Component {
-  constructor(props){
-    super(props)
-    this.state = {visible:true}
+  // state = {
+  //   players: [
+  //     { id: 1, name: "Type your name here", stackSize: 0 },
+  //     { id: 2, name: "Bot", stackSize: 0 },
+  //   ],
+  // };
+  constructor(props) {
+    super(props);
+    this.state = { players: [{ id: 1, name: "Type your name here", stackSize: 0 },
+    { id: 2, name: "Bot", stackSize: 0 },] };
   }
+
+  handleCall = (playerId) => {console.log('Call')};
+
+  handleRaise = (playerId) => {console.log('Raise')};
+
+  handleFold = (playerId) => {console.log('Fold')};
+
   render() {
     return (
       <React.Fragment>
-        <PlayerBanner />
+        {/* <PlayerBanner /> */}
+        <main className="container">
+          <Players players={this.state.players} onCall={this.handleCall} onRaise={this.handleRaise} onFold={this.handleFold}/>
+        </main>
       </React.Fragment>
       // <div className="App">
       //   <header className="App-header">
@@ -29,11 +47,8 @@ class App extends Component {
       //     </a>
       //   </header>
       // </div>
-      
     );
-
   }
-  
 }
 
 export default App;
