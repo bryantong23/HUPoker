@@ -3,7 +3,6 @@ import PlayerBanner from "./playerBanner";
 
 class Players extends Component {
   render() {
-    console.log("test");
     const { onCall, onRaise, onFold, players } = this.props;
     return (
       <div>

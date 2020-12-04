@@ -13,22 +13,40 @@ class App extends Component {
   // };
   constructor(props) {
     super(props);
-    this.state = { players: [{ id: 1, name: "Type your name here", stackSize: 0 },
-    { id: 2, name: "Bot", stackSize: 0 },] };
+    this.state = {
+      players: [
+        { id: 1, name: "Type your name here", stackSize: 0, viewText: false },
+        { id: 2, name: "Bot", stackSize: 0 },
+      ],
+    };
   }
 
-  handleCall = (playerId) => {console.log('Call')};
+  handleCall = () => {
+    console.log("Call");
+  };
 
-  handleRaise = (playerId) => {console.log('Raise')};
+  handleRaise = () => {
+    console.log("Raise");
+      const players = this.state.players;
+      players[0].viewText = !players[0].viewText;
+      this.setState({players});
+  };
 
-  handleFold = (playerId) => {console.log('Fold')};
+  handleFold = () => {
+    console.log("Fold");
+  };
 
   render() {
     return (
       <React.Fragment>
         {/* <PlayerBanner /> */}
         <main className="container">
-          <Players players={this.state.players} onCall={this.handleCall} onRaise={this.handleRaise} onFold={this.handleFold}/>
+          <Players
+            players={this.state.players}
+            onCall={this.handleCall}
+            onRaise={this.handleRaise}
+            onFold={this.handleFold}
+          />
         </main>
       </React.Fragment>
       // <div className="App">
