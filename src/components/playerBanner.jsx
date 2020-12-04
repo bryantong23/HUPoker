@@ -38,7 +38,14 @@ class PlayerBanner extends Component {
         </span>
         <span>
           {this.props.player.viewText ? (
-            <input placeholder="Enter raise amount"></input>
+            <input
+              id="raise"
+              placeholder="Enter raise amount"
+              onKeyPress={(event) => {
+                if (event.key === "Enter")
+                  this.props.onRaised(document.getElementById("raise").value);
+              }}
+            ></input>
           ) : null}
         </span>
         <span>

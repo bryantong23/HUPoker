@@ -15,7 +15,7 @@ class App extends Component {
     super(props);
     this.state = {
       players: [
-        { id: 1, name: "Type your name here", stackSize: 0, viewText: false },
+        { id: 1, name: "Type your name here", stackSize: 1000, viewText: false },
         { id: 2, name: "Bot", stackSize: 0 },
       ],
     };
@@ -25,12 +25,18 @@ class App extends Component {
     console.log("Call");
   };
 
-  handleRaise = () => {
+  handleClickRaise = () => {
     console.log("Raise");
       const players = this.state.players;
       players[0].viewText = !players[0].viewText;
       this.setState({players});
   };
+
+  handleRaise = (amount) => {
+    const players = this.state.players;
+    players[0].stackSize -= parseInt(amount);
+    this.setState({players});
+  }
 
   handleFold = () => {
     console.log("Fold");
@@ -44,8 +50,9 @@ class App extends Component {
           <Players
             players={this.state.players}
             onCall={this.handleCall}
-            onRaise={this.handleRaise}
+            onRaise={this.handleClickRaise}
             onFold={this.handleFold}
+            onRaised={this.handleRaise}
           />
         </main>
       </React.Fragment>

@@ -3,7 +3,7 @@ import PlayerBanner from "./playerBanner";
 
 class Players extends Component {
   render() {
-    const { onCall, onRaise, onFold, players } = this.props;
+    const { onCall, onRaise, onFold, onRaised, players } = this.props;
     return (
       <div>
         {players.map((player) => (
@@ -12,6 +12,7 @@ class Players extends Component {
             player={player}
             onCall={onCall}
             onRaise={onRaise}
+            onRaised={onRaised}
             onFold={onFold}
           ></PlayerBanner>
         ))}
