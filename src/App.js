@@ -44,18 +44,21 @@ class App extends Component {
     console.log("Fold");
   };
 
-  update = () => {
-    console.log("Update")
+  updateBlinds = () => {
     const sb = parseInt(document.getElementById("sb").value);
     const bb = parseInt(document.getElementById("bb").value);
+    this.setState({smallBlind: sb, bigBlind: bb});
+  };
+
+  updateStack = () => {
     const ss = parseInt(document.getElementById("ss").value);
-    this.setState({smallBlind: sb, bigBlind: bb, startingStack: ss});
+    this.setState({startingStack: ss});
     const players = this.state.players;
     for (var i = 0; i < this.state.players.length; i++){
       players[i].stackSize = ss;
     }
     this.setState({players});
-  };
+  }
 
   render() {
     return (
@@ -70,15 +73,21 @@ class App extends Component {
             <label htmlFor="bb">Big blind:</label>
             <input type="text" id="bb" name="bb" defaultValue="10"></input>
             <br></br>
+            <button
+              className="btn btn-primary btn-sm m-2"
+              onClick={this.updateBlinds}
+            >
+              Update Blinds
+            </button><br></br>
             <label htmlFor="ss">Stack size:</label>
             <input type="text" id="ss" name="ss" defaultValue="1000"></input>
             <br></br>
             <button
               className="btn btn-primary btn-sm m-2"
-              onClick={this.update}
+              onClick={this.updateStack}
             >
-              Update
-            </button>
+              Update Stack
+            </button><br></br>
           </div>
         </header>
         <main className="container">
