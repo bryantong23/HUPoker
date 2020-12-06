@@ -5,6 +5,7 @@ import Players from "./components/players";
 import React, { Component } from "react";
 import axios from 'axios';
 import Card from "./components/card";
+import HoleCards from "./components/holeCards";
 
 const API_URL = "https://deckofcardsapi.com/api/deck/new/shuffle/";
 
@@ -29,6 +30,7 @@ class App extends Component {
       flop: [],
       turn: [],
       river: [],
+      potSize: 0,
     };
   }
 
@@ -82,6 +84,9 @@ class App extends Component {
   startGame = () => {
     this.getDeck();
     this.dealHoleCards();
+    this.dealFlop();
+    this.dealTurn();
+    this.dealRiver();
   }
 
   getDeck = async() => {
@@ -111,14 +116,22 @@ class App extends Component {
 
       const river = this.state.cards.slice(8, 9);
       this.setState({river: river});
-    }
-     
+    }  
+  }
+
+  dealFlop = () => {
+
+  }
+
+  dealTurn = () => {
+
+  }
+
+  dealRiver = () => {
+
   }
 
   render() {
-    const cards = this.state.players[0].playerCards.map((e, i) => (
-      <Card key={i} src={e.image}/>
-    ));
     return (
       <React.Fragment>
         <header>
@@ -166,7 +179,7 @@ class App extends Component {
             onRaised={this.handleRaise}
           />
         </main>
-        <div className="Cards">{cards}</div>
+        <HoleCards holeCards={this.state.players[0].playerCards}></HoleCards>
       </React.Fragment>
     );
   }

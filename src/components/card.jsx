@@ -1,13 +1,10 @@
 import React, { Component } from "react";
 
 class Card extends Component {
-  //state = {  }
   render() {
     return (
       <React.Fragment>
-        <figure className="Card">
-          <img src={this.props.src}></img>
-        </figure>
+        <img src={this.props.src}></img>
       </React.Fragment>
     );
   }
