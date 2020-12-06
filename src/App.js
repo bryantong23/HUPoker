@@ -6,6 +6,7 @@ import React, { Component } from "react";
 import axios from 'axios';
 import Card from "./components/card";
 import HoleCards from "./components/holeCards";
+import Board from "./components/board";
 
 const API_URL = "https://deckofcardsapi.com/api/deck/new/shuffle/";
 
@@ -180,6 +181,7 @@ class App extends Component {
           />
         </main>
         <HoleCards holeCards={this.state.players[0].playerCards}></HoleCards>
+        <Board flop={this.state.flop} turn={this.state.turn} river={this.state.river}></Board>
       </React.Fragment>
     );
   }
