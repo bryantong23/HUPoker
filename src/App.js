@@ -24,14 +24,21 @@ class App extends Component {
           stackSize: 1000,
           viewText: false,
           playerCards: [],
+          position: 0,
+          turn: false
         },
-        { id: 2, name: "Bot", stackSize: 1000, botCards: [] },
+        { id: 2, name: "Bot", stackSize: 1000, botCards: [], position: 1, turn: false},
       ],
       cards: [],
       flop: [],
       turn: [],
       river: [],
       potSize: 0,
+      isPaused: false,
+      dealFlop: false,
+      dealTurn: false,
+      dealRiver: false,
+      betOutstanding: 0,
     };
   }
 
@@ -45,8 +52,17 @@ class App extends Component {
     this.setState({ cards });
   }
 
+  handleCheck = () => {
+    const players = this.state.players;
+    players[0].turn = false;
+  }
+
   handleCall = () => {
-    console.log("Call");
+    const players = this.state.players;
+    players[0].stackSize -= this.state.betOutstanding;
+    players[0].turn = false;
+    const newPotSize = this.state.potSize + this.state.betOutstanding;
+    this.setState({potSize: newPotSize});
   };
 
   handleClickRaise = () => {
@@ -56,14 +72,20 @@ class App extends Component {
   };
 
   handleRaise = (amount) => {
+    const raiseAmount = parseInt(amount);
     const players = this.state.players;
-    players[0].stackSize -= parseInt(amount);
+    players[0].stackSize -= raiseAmount;
     players[0].viewText = !players[0].viewText;
+    players[0].turn = false;
+    const newBetOutstanding = raiseAmount - this.state.betOutstanding;
+    const newPotSize = this.state.potSize + raiseAmount;
+    this.setState({betOutstanding: newBetOutstanding});
+    this.setState({potSize: newPotSize});
     this.setState({ players });
   };
 
   handleFold = () => {
-    console.log("Fold");
+    this.finishHand();
   };
 
   updateBlinds = () => {
@@ -83,11 +105,31 @@ class App extends Component {
   };
 
   startGame = () => {
-    this.getDeck();
-    this.dealHoleCards();
-    this.dealFlop();
-    this.dealTurn();
-    this.dealRiver();
+    if (this.state.bigBlind > this.state.smallBlind && this.state.startingStack >= this.state.bigBlind){
+      //while (!this.state.isPaused){
+        const newPot = this.state.smallBlind + this.state.bigBlind;
+        this.setState({potSize: newPot});
+        this.getDeck();
+        this.dealHoleCards();
+        this.dealFlop();
+        this.dealTurn();
+        this.dealRiver();
+        this.finishHand();
+        //continue;
+
+        
+
+      //}
+    }
+    else {
+      alert("Please make sure game settings are valid.");
+    }
+  }
+  
+
+  pauseGame = () => {
+    const pause = !this.state.isPaused;
+    this.setState({isPaused: pause});
   }
 
   getDeck = async() => {
@@ -101,6 +143,7 @@ class App extends Component {
   }
 
   dealHoleCards = () => {
+    this.setState({betOutstanding: this.state.smallBlind});
     if (this.state.cards.length !== 0){
       const playerCards = this.state.cards.slice(0, 2);
       const players = this.state.players;
@@ -109,27 +152,38 @@ class App extends Component {
       const botCards = this.state.cards.slice(2, 4);
       players[1].botCards = botCards;
 
-      const flop = this.state.cards.slice(4, 7);
-      this.setState({flop: flop});
-
-      const turn = this.state.cards.slice(7, 8);
-      this.setState({turn: turn});
-
-      const river = this.state.cards.slice(8, 9);
-      this.setState({river: river});
+      if (players[0].position === 0){
+        players[0].turn = true;
+      }
     }  
+
+
   }
 
   dealFlop = () => {
+    const flop = this.state.cards.slice(4, 7);
+      this.setState({flop: flop});
 
   }
 
   dealTurn = () => {
+    const turn = this.state.cards.slice(7, 8);
+      this.setState({turn: turn});
 
   }
 
   dealRiver = () => {
+    const river = this.state.cards.slice(8, 9);
+      this.setState({river: river});
 
+  }
+
+  finishHand = () => {
+    const players = this.state.players;
+    for (var i = 0; i < this.state.players.length; i++){
+      players[i].turn = false;
+      players[i].position = 1 - players[i].position;
+    }
   }
 
   render() {
@@ -169,19 +223,28 @@ class App extends Component {
             >
               Start Game
             </button>
+            <button
+              className="btn btn-primary btn-sm m-2"
+              onClick={this.pauseGame}
+            >
+              Pause
+            </button>
           </div>
         </header>
         <main className="container">
           <Players
             players={this.state.players}
+            onCheck={this.handleCheck}
             onCall={this.handleCall}
             onRaise={this.handleClickRaise}
             onFold={this.handleFold}
             onRaised={this.handleRaise}
           />
+          <label htmlFor="pot">Pot size:</label>
+          <p id="pot">{this.state.potSize}</p>
         </main>
         <HoleCards holeCards={this.state.players[0].playerCards}></HoleCards>
-        <Board flop={this.state.flop} turn={this.state.turn} river={this.state.river}></Board>
+        <Board dealFlop={this.state.dealFlop} dealTurn={this.state.dealTurn} dealRiver={this.state.dealRiver} flop={this.state.flop} turn={this.state.turn} river={this.state.river}></Board>
       </React.Fragment>
     );
   }
