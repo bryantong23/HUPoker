@@ -71,6 +71,11 @@ class PlayerBanner extends Component {
               </button>
             ) : null}
           </span>
+          <p id="betAmount">
+            {this.props.player.betAmount === 0
+              ? null
+              : this.props.player.betAmount}
+          </p>
         </div>
       </React.Fragment>
     );
