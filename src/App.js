@@ -49,6 +49,7 @@ class App extends Component {
       dealRiver: false,
       betOutstanding: 0,
       showBotCards: false,
+      finishedHand: false,
     };
   }
 
@@ -76,19 +77,26 @@ class App extends Component {
       players[1].turn = true;
       this.setState({ players });
       this.dealNext();
+      this.botAction();
     }
   };
 
   handleCall = () => {
-    const players = this.state.players;
-    players[0].stackSize -= this.state.betOutstanding;
-    players[0].turn = false;
-    players[1].turn = true;
-    players[0].betAmount = players[1].betAmount;
-    const newPotSize = this.state.potSize + this.state.betOutstanding;
-    this.setState({ potSize: newPotSize });
-    this.setState({ betOutstanding: 0 });
-    this.dealNext();
+    if (this.state.betOutstanding !== 0){
+      const players = this.state.players;
+      players[0].stackSize -= this.state.betOutstanding;
+      players[0].turn = false;
+      players[1].turn = true;
+      players[0].betAmount = players[1].betAmount;
+      const newPotSize = this.state.potSize + this.state.betOutstanding;
+      this.setState({ potSize: newPotSize }, () => {
+        this.setState({ betOutstanding: 0}, () => {
+          this.dealNext();
+          this.botAction();
+        })
+      });
+    }
+    
   };
 
   handleClickRaise = () => {
@@ -122,7 +130,12 @@ class App extends Component {
   handleFold = () => {
     const players = this.state.players;
     players[0].turn = false;
-    this.finishHand();
+    players[1].stackSize += this.state.potSize;
+    this.setState({players}, () => {
+      this.setState({potSize: 0}, () => {
+        this.finishHand();
+      })
+    })
   };
 
   updateBlinds = () => {
@@ -167,19 +180,13 @@ class App extends Component {
   };
 
   startGame = () => {
+    this.refs.btn.setAttribute("disabled", "disabled");
     if (
       this.state.bigBlind > this.state.smallBlind &&
       this.state.startingStack >= this.state.bigBlind
-    ) {
+    ) { this.dealHoleCards();
       //while (!this.state.isPaused){
-      const newPot = this.state.smallBlind + this.state.bigBlind;
-      const sb = this.state.smallBlind;
-      this.setState({ potSize: newPot }, () => {
-        this.setState({ betOutstanding: sb }, () => {
-          //this.getDeck();
-          this.dealHoleCards();
-        });
-      });
+      
 
       //this.dealFlop();
       //this.dealTurn();
@@ -209,7 +216,16 @@ class App extends Component {
   // };
 
   dealHoleCards = () => {
-    this.resetBetAmount();
+    this.componentDidMount();
+    const newPot = this.state.smallBlind + this.state.bigBlind;
+    const sb = this.state.smallBlind;
+    this.setState({potSize: newPot}, () => {
+      this.setState({betOutstanding: sb}, () => {
+        this.setState({finishedHand: false}, () => {
+          this.resetBetAmount();
+        })
+      })
+    })
 
     if (this.state.cards.length !== 0) {
       const playerCards = this.state.cards.slice(0, 2);
@@ -297,7 +313,11 @@ class App extends Component {
   };
 
   showDown = () => {
-    this.setState({showBotCards: true});
+    this.setState({showBotCards: true}, () => {
+      this.setState({finishedHand: true}, () => {
+        this.finishHand();
+      })
+    });
   }
 
   finishHand = () => {
@@ -306,7 +326,10 @@ class App extends Component {
       players[i].turn = false;
       players[i].position = 1 - players[i].position;
     }
-    this.setState({ players });
+    console.log("finish hand");
+    this.setState({ players }, () => {
+      this.setState({finishedHand: true});
+    });
   };
 
   resetBetAmount = () => {
@@ -350,6 +373,7 @@ class App extends Component {
             <br></br>
             <button
               className="btn btn-primary btn-sm m-2"
+              ref="btn"
               onClick={this.startGame}
             >
               Start Game
@@ -360,6 +384,16 @@ class App extends Component {
             >
               Pause
             </button>
+            <span> 
+             {this.state.finishedHand ? (
+              <button
+                onClick={() => this.startGame()}
+                className="btn btn-primary btn-sm m-2"
+              >
+                Deal Next Hand
+              </button>
+            ) : null}
+            </span>
           </div>
         </header>
         <main className="container">
