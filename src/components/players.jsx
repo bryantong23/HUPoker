@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import PlayerBanner from "./playerBanner";
 
+// Component to represent collection of player banners (player and bot)
 class Players extends Component {
   render() {
     const { onCheck, onCall, onRaise, onFold, onRaised, players } = this.props;

@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 
+// Component to represent player and bot action banner (check, call, raise, fold)
 class PlayerBanner extends Component {
   state = {
     name: "Type your name here",
@@ -23,7 +24,8 @@ class PlayerBanner extends Component {
             {this.props.player.id === 1 ? (
               <button
                 onClick={() => this.props.onCheck()}
-                className={this.getButtonClasses()}
+                className="btn btn-primary btn-sm m-2"
+                disabled={!this.props.player.turn}
               >
                 Check
               </button>
@@ -33,7 +35,8 @@ class PlayerBanner extends Component {
             {this.props.player.id === 1 ? (
               <button
                 onClick={() => this.props.onCall()}
-                className={this.getButtonClasses()}
+                className="btn btn-primary btn-sm m-2"
+                disabled={!this.props.player.turn}
               >
                 Call
               </button>
@@ -43,7 +46,8 @@ class PlayerBanner extends Component {
             {this.props.player.id === 1 ? (
               <button
                 onClick={() => this.props.onRaise()}
-                className={this.getButtonClasses()}
+                className="btn btn-primary btn-sm m-2"
+                disabled={!this.props.player.turn}
               >
                 Raise
               </button>
@@ -65,7 +69,8 @@ class PlayerBanner extends Component {
             {this.props.player.id === 1 ? (
               <button
                 onClick={() => this.props.onFold()}
-                className={this.getButtonClasses()}
+                className="btn btn-primary btn-sm m-2"
+                disabled={!this.props.player.turn}
               >
                 Fold
               </button>
@@ -81,13 +86,13 @@ class PlayerBanner extends Component {
     );
   }
 
-  getButtonClasses() {
-    let classes = "btn btn-";
-    classes += this.props.player.turn
-      ? "danger btn-sm m-2"
-      : "primary btn-sm m-2";
-    return classes;
-  }
+  // getButtonClasses() {
+  //   let classes = "btn btn-";
+  //   classes += this.props.player.turn
+  //     ? "danger btn-sm m-2"
+  //     : "primary btn-sm m-2";
+  //   return classes;
+  // }
 }
 
 export default PlayerBanner;

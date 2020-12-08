@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import Card from "./card";
 
+// Component to represent both player and bot hole cards
 class HoleCards extends Component {
   render() {
     const { holeCards } = this.props;

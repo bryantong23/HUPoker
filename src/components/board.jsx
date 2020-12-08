@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import Card from "./card";
 
+// Component to represent the community board (flop, turn, river)
 class Board extends Component {
   render() {
     const { dealFlop, dealTurn, dealRiver, flop, turn, river } = this.props;
@@ -12,21 +13,6 @@ class Board extends Component {
         <span>{dealFlop ? flopCards : null}</span>
         <span>{dealTurn ? turnCards : null}</span>
         <span>{dealRiver ? riverCards : null}</span>
-        {/* <span>
-          {flop.map((e, i) => (
-            <Card key={i} src={e.image} />
-          ))}
-        </span>
-        <span>
-          {turn.map((e, i) => (
-            <Card key={i} src={e.image} />
-          ))}
-        </span>
-        <span>
-          {river.map((e, i) => (
-            <Card key={i} src={e.image} />
-          ))}
-        </span> */}
       </React.Fragment>
     );
   }
