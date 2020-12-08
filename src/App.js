@@ -64,32 +64,45 @@ class App extends Component {
   }
 
   handleCheck = () => {
-    if (
-      this.state.betOutstanding === 0 &&
-      this.state.players[0].position === 1
-    ) {
-      const players = this.state.players;
-      players[0].turn = false;
-      players[1].turn = true;
-      this.setState({ players });
-      setTimeout(() => {
-        this.botAction()
-      }, 3000);
-    } else if (
-      this.state.betOutstanding === 0 &&
-      this.state.players[0].position === 0
-    ) {
-      const players = this.state.players;
-      players[0].turn = false;
-      players[1].turn = true;
-      this.setState({ players });
-      setTimeout(() => {
-        this.dealNext()
-      }, 1500);
-      setTimeout(() => {
-        this.botAction()
-      }, 3000);
+    if (this.state.dealFlop){
+      if (
+        this.state.betOutstanding === 0 &&
+        this.state.players[0].position === 1
+      ) {
+        const players = this.state.players;
+        players[0].turn = false;
+        players[1].turn = true;
+        this.setState({ players });
+        setTimeout(() => {
+          this.botAction()
+        }, 3000);
+      } else if (
+        this.state.betOutstanding === 0 &&
+        this.state.players[0].position === 0
+      ) {
+        const players = this.state.players;
+        players[0].turn = false;
+        players[1].turn = true;
+        this.setState({ players });
+        setTimeout(() => {
+          this.dealNext()
+        }, 1500);
+        setTimeout(() => {
+          this.botAction()
+        }, 3000);
+      }
     }
+    else if (this.state.betOutstanding === 0 && this.state.players[0].position === 1) {
+      const players = this.state.players;
+      players[0].turn = true;
+      players[1].turn = false;
+      this.setState({players}, () => {
+        setTimeout(() => {
+          this.dealNext()
+        }, 1500);
+      })
+    }
+    
   };
 
   handleCall = () => {
@@ -143,14 +156,16 @@ class App extends Component {
   };
 
   handleFold = () => {
-    const players = this.state.players;
-    players[0].turn = false;
-    players[1].stackSize += this.state.potSize;
-    this.setState({ players }, () => {
-      this.setState({ potSize: 0 }, () => {
-        this.finishHand();
+    if (this.state.betOutstanding !== 0){
+      const players = this.state.players;
+      players[0].turn = false;
+      players[1].stackSize += this.state.potSize;
+      this.setState({ players }, () => {
+        this.setState({ potSize: 0 }, () => {
+          this.finishHand();
+        });
       });
-    });
+    }
   };
 
   updateBlinds = () => {
@@ -190,9 +205,11 @@ class App extends Component {
       this.setState({ potSize: newPotSize });
       this.setState({ players });
       this.setState({ betOutstanding: 0 });
-      setTimeout(() => {
-        this.dealNext()
-      }, 1500);
+      if (this.state.dealFlop){
+        setTimeout(() => {
+          this.dealNext()
+        }, 1500);
+      }
     }
   };
 
@@ -218,7 +235,7 @@ class App extends Component {
   };
 
   dealNextHand = () => {
-    this.refs.btn.setAttribute("disabled", "disabled");
+    this.finishHand();
     this.dealHoleCards();
   };
 
@@ -247,23 +264,31 @@ class App extends Component {
             const sb = this.state.smallBlind;
             this.setState({ potSize: newPot }, () => {
               this.setState({ betOutstanding: sb }, () => {
-                this.setState({finishedHand: false});
+                this.setState({finishedHand: false}, () => {
+                  this.setState({flop: []}, () => {
+                    this.setState({turn: []}, () => {
+                      this.setState({river: []}, () => {
+                        if (this.state.cards.length !== 0) {
+                          const playerCards = this.state.cards.slice(0, 2);
+                          const players = this.state.players;
+                          players[0].playerCards = playerCards;
+            
+                          const botCards = this.state.cards.slice(2, 4);
+                          players[1].botCards = botCards;
+            
+                          this.setState({ players });
+            
+                          this.preFlopBetting();
+                        }
+                      })
+                    })
+                  })
+                });
                 });
               });
             });
 
-            if (this.state.cards.length !== 0) {
-              const playerCards = this.state.cards.slice(0, 2);
-              const players = this.state.players;
-              players[0].playerCards = playerCards;
-
-              const botCards = this.state.cards.slice(2, 4);
-              players[1].botCards = botCards;
-
-              this.setState({ players });
-
-              this.preFlopBetting();
-            }
+            
           });
         });
       });
@@ -278,20 +303,6 @@ class App extends Component {
       players[1].betAmount = this.state.bigBlind;
       players[1].stackSize -= this.state.bigBlind;
       this.setState({ players });
-      // while (this.state.betOutstanding !== 0){
-      //   if (players[0].position === 0) {
-      //     players[0].turn = true;
-      //     while (players[0].turn){
-      //       continue;
-      //     }
-      //     this.botAction();
-      //     break;
-      //   }
-      //   else {
-      //     this.botAction();
-      //     break;
-      //   }
-      // }
     } else {
       players[1].turn = true;
       players[0].betAmount = this.state.bigBlind;
@@ -311,12 +322,14 @@ class App extends Component {
     const players = this.state.players;
     players[0].betAmount = 0;
     players[1].betAmount = 0;
-    this.setState({ players });
-    this.setState({ betOutstanding: 0 });
-    if (this.state.flop.length === 0) this.dealFlop();
-    else if (this.state.turn.length === 0) this.dealTurn();
-    else if (this.state.river.length === 0) this.dealRiver();
-    else this.showDown();
+    this.setState({ players }, () => {
+      this.setState({betOutstanding: 0}, () => {
+        if (this.state.flop.length === 0) this.dealFlop();
+        else if (this.state.turn.length === 0) this.dealTurn();
+        else if (this.state.river.length === 0) this.dealRiver();
+        else this.showDown();
+      })
+    });    
   };
 
   dealFlop = () => {
@@ -343,7 +356,7 @@ class App extends Component {
   showDown = () => {
     this.setState({ showBotCards: true }, () => {
       this.setState({ finishedHand: true }, () => {
-        this.finishHand();
+        //this.finishHand();
       });
     });
   };
