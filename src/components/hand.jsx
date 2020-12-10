@@ -56,7 +56,34 @@ class Hand extends Component {
   };
 
   evaluateFlop = (holeCards, flop) => {
-    return "test";
+    var cards = [];
+    for (var i = 0; i < holeCards.length; i++) {
+      cards.push(holeCards[i].code);
+    }
+    for (var i = 0; i < flop.length; i++) {
+      cards.push(flop[i].code);
+    }
+    if (this.isRoyalFlush(cards)) return "Royal Flush";
+    if (this.isStraightFlush(cards)) return "Straight Flush";
+    if (this.isFourOfAKind(cards)) return "Four of a kind";
+    if (this.isFullHouse(cards)) return "Full House";
+    if (this.isFlush(cards)) return "Flush";
+    if (this.isStraight(cards)) return "Straight";
+    if (this.isTrips(cards)) return "Three of a kind";
+    if (this.isTwoPair(cards)) return "Two pair";
+    if (this.isPair(cards)) return "Pair";
+    else {
+      var high = "";
+      var indexHigh = 0;
+      for (var i = 0; i < cards.length; i++) {
+        var tempIndex = this.state.values.indexOf(cards[i].substr(0, 1));
+        if (tempIndex > indexHigh) {
+          indexHigh = tempIndex;
+          high = cards[i].substr(0, 1);
+        }
+      }
+      return high + " high";
+    }
   };
 
   evaluateTurn = (holeCards, flop, turn) => {};
@@ -79,9 +106,43 @@ class Hand extends Component {
     return false;
   }
 
-  isFourOfAKind(cards) {}
+  isFourOfAKind(cards) {
+    var vals = [];
+    for (var i = 0; i < cards.length; i++) {
+      vals.push(cards[i].substr(0, 1));
+    }
+    var set = new Set(vals);
+    if (set.size === 2) {
+      var uniqueVals = Array.from(set);
+      for (var i = 0; i < uniqueVals.length; i++) {
+        var valCount = 0;
+        for (var j = 0; j < vals.length; j++) {
+          if (vals[j] === uniqueVals[i]) valCount++;
+          if (valCount === 4) return true;
+        }
+      }
+    }
+    return false;
+  }
 
-  isFullHouse(cards) {}
+  isFullHouse(cards) {
+    var vals = [];
+    for (var i = 0; i < cards.length; i++) {
+      vals.push(cards[i].substr(0, 1));
+    }
+    var set = new Set(vals);
+    if (set.size === 2) {
+      var uniqueVals = Array.from(set);
+      for (var i = 0; i < uniqueVals.length; i++) {
+        var valCount = 0;
+        for (var j = 0; j < vals.length; j++) {
+          if (vals[j] === uniqueVals[i]) valCount++;
+          if (valCount === 3) return true;
+        }
+      }
+    }
+    return false;
+  }
 
   isFlush(cards) {
     for (var i = 0; i < cards.length - 1; i++) {
@@ -90,13 +151,59 @@ class Hand extends Component {
     return true;
   }
 
-  isStraight(cards) {}
+  isStraight(cards) {
+    var indices = [];
+    for (var i = 0; i < cards.length; i++) {
+      indices.push(this.state.values.indexOf(cards[i].substr(0, 1)));
+    }
+    indices.sort();
+    if (indices[indices.length - 1] - indices[0] === indices.length - 1)
+      return true;
+    else return false;
+  }
 
-  isTrips(cards) {}
+  isTrips(cards) {
+    var vals = [];
+    for (var i = 0; i < cards.length; i++) {
+      vals.push(cards[i].substr(0, 1));
+    }
+    var set = new Set(vals);
+    if (set.size === 3) {
+      var uniqueVals = Array.from(set);
+      for (var i = 0; i < uniqueVals.length; i++) {
+        var valCount = 0;
+        for (var j = 0; j < vals.length; j++) {
+          if (vals[j] === uniqueVals[i]) valCount++;
+          if (valCount === 3) return true;
+        }
+      }
+    }
+    return false;
+  }
 
-  isTwoPair(cards) {}
+  isTwoPair(cards) {
+    var vals = [];
+    for (var i = 0; i < cards.length; i++) {
+      vals.push(cards[i].substr(0, 1));
+    }
+    var set = new Set(vals);
+    if (set.size === 3) {
+      return true;
+    }
+    return false;
+  }
 
-  isPair(cards) {}
+  isPair(cards) {
+    var vals = [];
+    for (var i = 0; i < cards.length; i++) {
+      vals.push(cards[i].substr(0, 1));
+    }
+    var set = new Set(vals);
+    if (set.size === 4) {
+      return true;
+    }
+    return false;
+  }
 
   displayHand = (
     dealHoleCards,
