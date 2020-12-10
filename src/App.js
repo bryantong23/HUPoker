@@ -7,6 +7,7 @@ import axios from "axios";
 import Card from "./components/card";
 import HoleCards from "./components/holeCards";
 import Board from "./components/board";
+import Hand from "./components/hand";
 
 const API_URL = "https://deckofcardsapi.com/api/deck/new/shuffle/";
 
@@ -52,6 +53,7 @@ class App extends Component {
       dealFlop: false,
       dealTurn: false,
       dealRiver: false,
+      dealHoleCards: false,
       betOutstanding: 0,
       showBotCards: false,
       finishedHand: false,
@@ -262,6 +264,10 @@ class App extends Component {
         setTimeout(() => {
           this.dealNext();
         }, 1500);
+      } else if (players[1].position === 1) {
+        setTimeout(() => {
+          this.dealNext();
+        }, 1500);
       }
     }
   };
@@ -318,6 +324,7 @@ class App extends Component {
                   this.setState({ flop: [] }, () => {
                     this.setState({ turn: [] }, () => {
                       this.setState({ river: [] }, () => {
+                        this.setState({dealHoleCards: true});
                         // Deal hole cards if API call returned deck with non zero length
                         if (this.state.cards.length !== 0) {
                           const playerCards = this.state.cards.slice(0, 2);
@@ -328,7 +335,6 @@ class App extends Component {
                           players[1].botCards = botCards;
 
                           this.setState({ players });
-
                           // Go to preflop betting
                           this.preFlopBetting();
                         }
@@ -503,6 +509,21 @@ class App extends Component {
           />
           <p id="pot">{"Pot size: " + this.state.potSize}</p>
         </main>
+        <span>
+              {this.state.dealHoleCards ? (
+                <Hand
+                holeCards={this.state.players[0].playerCards}
+                flop={this.state.flop}
+                turn={this.state.turn}
+                river={this.state.river}
+                dealHoleCards={this.state.dealHoleCards}
+                dealFlop={this.state.dealFlop}
+                dealTurn={this.state.dealTurn}
+                dealRiver={this.state.dealRiver}
+              ></Hand>
+              ) : null}
+            </span>
+        
         <HoleCards holeCards={this.state.players[0].playerCards}></HoleCards>
         <Board
           dealFlop={this.state.dealFlop}
