@@ -9,6 +9,18 @@ class Hand extends Component {
       turn: this.props.turn,
       river: this.props.river,
       values: ["2", "3", "4", "5", "6", "7", "8", "9", "0", "J", "Q", "K", "A"],
+      rank: [
+        "High card",
+        "Pair",
+        "Two pair",
+        "Three of a kind",
+        "Straight",
+        "Flush",
+        "Full House",
+        "Four of a kind",
+        "Straight Flush",
+        "Royal Flush",
+      ],
     };
   }
 
@@ -43,16 +55,23 @@ class Hand extends Component {
   evaluateHoleCards = (holeCards) => {
     var card1 = holeCards[0].code;
     var card2 = holeCards[1].code;
-    if (card1.substring(0, 1) === card2.substring(0, 1))
-      return "Pair of " + card1.substring(0, 1) + "s";
+    if (card1.substring(0, 1) === card2.substring(0, 1)) return "Pair";
     else {
-      if (
-        this.state.values.indexOf(card1.substring(0, 1)) >
-        this.state.values.indexOf(card2.substring(0, 1))
-      ) {
-        return card1.substring(0, 1) + " high";
-      } else return card2.substring(0, 1) + " high";
+      return "High card";
     }
+  };
+
+  evaluateFiveCardHand = (cards) => {
+    if (this.isRoyalFlush(cards)) return 9;
+    if (this.isStraightFlush(cards)) return 8;
+    if (this.isFourOfAKind(cards)) return 7;
+    if (this.isFullHouse(cards)) return 6;
+    if (this.isFlush(cards)) return 5;
+    if (this.isStraight(cards)) return 4;
+    if (this.isTrips(cards)) return 3;
+    if (this.isTwoPair(cards)) return 2;
+    if (this.isPair(cards)) return 1;
+    else return 0;
   };
 
   evaluateFlop = (holeCards, flop) => {
@@ -63,32 +82,45 @@ class Hand extends Component {
     for (var i = 0; i < flop.length; i++) {
       cards.push(flop[i].code);
     }
-    if (this.isRoyalFlush(cards)) return "Royal Flush";
-    if (this.isStraightFlush(cards)) return "Straight Flush";
-    if (this.isFourOfAKind(cards)) return "Four of a kind";
-    if (this.isFullHouse(cards)) return "Full House";
-    if (this.isFlush(cards)) return "Flush";
-    if (this.isStraight(cards)) return "Straight";
-    if (this.isTrips(cards)) return "Three of a kind";
-    if (this.isTwoPair(cards)) return "Two pair";
-    if (this.isPair(cards)) return "Pair";
-    else {
-      var high = "";
-      var indexHigh = 0;
-      for (var i = 0; i < cards.length; i++) {
-        var tempIndex = this.state.values.indexOf(cards[i].substr(0, 1));
-        if (tempIndex > indexHigh) {
-          indexHigh = tempIndex;
-          high = cards[i].substr(0, 1);
-        }
-      }
-      return high + " high";
-    }
+    return this.state.rank[this.evaluateFiveCardHand(cards)];
   };
 
-  evaluateTurn = (holeCards, flop, turn) => {};
+  evaluateTurn = (holeCards, flop, turn) => {
+    var cards = [];
+    for (var i = 0; i < holeCards.length; i++) {
+      cards.push(holeCards[i].code);
+    }
+    for (var i = 0; i < flop.length; i++) {
+      cards.push(flop[i].code);
+    }
+    cards.push(turn[0].code);
+    var high = 0;
+    for (var i = 0; i < 2; i++) {
+      var tempCards = cards.slice(i, cards.length - 1 + i);
+      if (this.evaluateFiveCardHand(tempCards) > high)
+        high = this.evaluateFiveCardHand(tempCards);
+    }
+    return this.state.rank[high];
+  };
 
-  evaluateRiver = (holeCards, flop, turn, river) => {};
+  evaluateRiver = (holeCards, flop, turn, river) => {
+    var cards = [];
+    for (var i = 0; i < holeCards.length; i++) {
+      cards.push(holeCards[i].code);
+    }
+    for (var i = 0; i < flop.length; i++) {
+      cards.push(flop[i].code);
+    }
+    cards.push(turn[0].code);
+    cards.push(river[0].code);
+    var high = 0;
+    for (var i = 0; i < 3; i++) {
+      var tempCards = cards.slice(i, cards.length - 2 + i);
+      if (this.evaluateFiveCardHand(tempCards) > high)
+        high = this.evaluateFiveCardHand(tempCards);
+    }
+    return this.state.rank[high];
+  };
 
   isRoyalFlush(cards) {
     if (this.isStraightFlush(cards)) {
@@ -156,8 +188,16 @@ class Hand extends Component {
     for (var i = 0; i < cards.length; i++) {
       indices.push(this.state.values.indexOf(cards[i].substr(0, 1)));
     }
-    indices.sort();
+    indices.sort(function (a, b) {
+      return a - b;
+    });
+    console.log(indices);
     if (indices[indices.length - 1] - indices[0] === indices.length - 1)
+      return true;
+    else if (
+      indices[indices.length - 1] - indices[0] === 12 &&
+      indices[indices.length - 2] - indices[0] === 3
+    )
       return true;
     else return false;
   }
