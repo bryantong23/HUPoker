@@ -5,6 +5,22 @@ import axios from "axios";
 import HoleCards from "./components/holeCards";
 import Board from "./components/board";
 import Hand from "./components/hand";
+import {
+  evaluateHoleCards,
+  evaluateFiveCardHand,
+  evaluateFlop,
+  evaluateRiver,
+  evaluateTurn,
+  isRoyalFlush,
+  isStraightFlush,
+  isFourOfAKind,
+  isFullHouse,
+  isFlush,
+  isStraight,
+  isTrips,
+  isTwoPair,
+  isPair,
+} from "./components/HandEvaluator.js";
 
 const API_URL = "https://deckofcardsapi.com/api/deck/new/shuffle/";
 
@@ -219,6 +235,7 @@ class App extends Component {
       players[1].stackSize += this.state.potSize;
       this.setState({ players }, () => {
         this.setState({ potSize: 0 }, () => {
+          console.log("fold");
           this.finishHand();
         });
       });
@@ -307,7 +324,6 @@ class App extends Component {
       .then((e) => e.data.cards);
 
     this.setState({ cards }, () => {
-      this.finishHand();
       this.dealHoleCards();
     });
   }
@@ -428,11 +444,17 @@ class App extends Component {
       this.setState({ finishedHand: true }, () => {
         // If player had a stronger unique hand
         if (
-          this.state.rank.indexOf(
-            document.getElementById("playerHand").textContent
+          evaluateRiver(
+            this.state.players[0].playerCards,
+            this.state.flop,
+            this.state.turn,
+            this.state.river
           ) >
-          this.state.rank.indexOf(
-            document.getElementById("botHand").textContent
+          evaluateRiver(
+            this.state.players[1].botCards,
+            this.state.flop,
+            this.state.turn,
+            this.state.river
           )
         ) {
           const players = this.state.players;
@@ -440,16 +462,23 @@ class App extends Component {
           players[0].stackSize += this.state.potSize;
           this.setState({ players }, () => {
             this.setState({ potSize: 0 }, () => {
+              console.log("player won");
               this.finishHand();
             });
           });
           // If bot had a stronger unique hand
         } else if (
-          this.state.rank.indexOf(
-            document.getElementById("playerHand").textContent
+          evaluateRiver(
+            this.state.players[0].playerCards,
+            this.state.flop,
+            this.state.turn,
+            this.state.river
           ) <
-          this.state.rank.indexOf(
-            document.getElementById("botHand").textContent
+          evaluateRiver(
+            this.state.players[1].botCards,
+            this.state.flop,
+            this.state.turn,
+            this.state.river
           )
         ) {
           const players = this.state.players;
@@ -457,21 +486,42 @@ class App extends Component {
           players[1].stackSize += this.state.potSize;
           this.setState({ players }, () => {
             this.setState({ potSize: 0 }, () => {
+              console.log("bot won");
               this.finishHand();
             });
           });
           // If both players had same main hand, look for kickers
         } else {
+          this.splitPot();
           const players = this.state.players;
           players[0].turn = false;
           this.setState({ players }, () => {
             this.setState({ potSize: 0 }, () => {
+              console.log("tie");
               this.finishHand();
             });
           });
         }
       });
     });
+  };
+
+  breakTie = () => {
+    if (document.getElementById("playerHand").textContent === "Royal Flush") {
+      this.splitPot();
+    }
+  };
+
+  splitPot = () => {
+    const players = this.state.players;
+    if (this.state.potSize % 2 === 0) {
+      players[0].stackSize += this.state.potSize / 2;
+      players[1].stackSize += this.state.potSize / 2;
+    } else {
+      players[0].stackSize += Math.ceil(this.state.potSize / 2);
+      players[1].stackSize += Math.ceil(this.state.potSize / 2) - 1;
+    }
+    this.setState({ players });
   };
 
   // Method to finish up hand
