@@ -24,34 +24,6 @@ class Hand extends Component {
     };
   }
 
-  // handName = (holeCards, flop, turn, river) => {
-  //   console.log(flop);
-  //   this.setState({
-  //     holeCards: this.props.holeCards,
-  //     flop: this.props.flop,
-  //     turn: this.props.turn,
-  //     river: this.props.river,
-  //   });
-  //   if (this.state.flop.length === 0) {
-  //     return this.evaluateHoleCards(this.state.holeCards);
-  //   } else if (this.state.turn.length === 0) {
-  //     return this.evaluateFlop(this.state.holeCards, this.state.flop);
-  //   } else if (this.state.river.length === 0) {
-  //     return this.evaluateTurn(
-  //       this.state.holeCards,
-  //       this.state.flop,
-  //       this.state.turn
-  //     );
-  //   } else {
-  //     return this.evaluateRiver(
-  //       this.state.holeCards,
-  //       this.state.flop,
-  //       this.state.turn,
-  //       this.state.river
-  //     );
-  //   }
-  // };
-
   evaluateHoleCards = (holeCards) => {
     var card1 = holeCards[0].code;
     var card2 = holeCards[1].code;
@@ -95,8 +67,9 @@ class Hand extends Component {
     }
     cards.push(turn[0].code);
     var high = 0;
-    for (var i = 0; i < 2; i++) {
-      var tempCards = cards.slice(i, cards.length - 1 + i);
+    for (var i = 0; i < 6; i++) {
+      var tempCards = cards.slice();
+      tempCards.splice(i, 1);
       if (this.evaluateFiveCardHand(tempCards) > high)
         high = this.evaluateFiveCardHand(tempCards);
     }
@@ -114,10 +87,14 @@ class Hand extends Component {
     cards.push(turn[0].code);
     cards.push(river[0].code);
     var high = 0;
-    for (var i = 0; i < 3; i++) {
-      var tempCards = cards.slice(i, cards.length - 2 + i);
-      if (this.evaluateFiveCardHand(tempCards) > high)
-        high = this.evaluateFiveCardHand(tempCards);
+    for (var i = 0; i < cards.length - 1; i++) {
+      for (var j = 1; j < cards.length; j++) {
+        var tempCards = cards.slice();
+        tempCards.splice(i, 1);
+        tempCards.splice(j - 1, 1);
+        if (this.evaluateFiveCardHand(tempCards) > high)
+          high = this.evaluateFiveCardHand(tempCards);
+      }
     }
     return this.state.rank[high];
   };
@@ -177,10 +154,14 @@ class Hand extends Component {
   }
 
   isFlush(cards) {
-    for (var i = 0; i < cards.length - 1; i++) {
-      if (cards[i].substr(1) !== cards[i + 1].substr(1)) return false;
+    var suits = [];
+    for (var i = 0; i < cards.length; i++) {
+      suits.push(cards[i].substr(1));
     }
-    return true;
+    var set = new Set(suits);
+    if (set.size === 1) {
+      return true;
+    } else return false;
   }
 
   isStraight(cards) {
@@ -191,15 +172,16 @@ class Hand extends Component {
     indices.sort(function (a, b) {
       return a - b;
     });
-    console.log(indices);
-    if (indices[indices.length - 1] - indices[0] === indices.length - 1)
-      return true;
-    else if (
-      indices[indices.length - 1] - indices[0] === 12 &&
-      indices[indices.length - 2] - indices[0] === 3
+    var wheel = [0, 1, 2, 3, 12];
+    if (
+      indices.length === wheel.length &&
+      indices.every((value, index) => value === wheel[index])
     )
       return true;
-    else return false;
+    for (var i = 0; i < indices.length - 1; i++) {
+      if (indices[i] + 1 !== indices[i + 1]) return false;
+    }
+    return true;
   }
 
   isTrips(cards) {

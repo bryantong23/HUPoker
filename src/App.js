@@ -58,6 +58,19 @@ class App extends Component {
       showBotCards: false,
       finishedHand: false,
       startedGame: false,
+
+      rank: [
+        "High card",
+        "Pair",
+        "Two pair",
+        "Three of a kind",
+        "Straight",
+        "Flush",
+        "Full House",
+        "Four of a kind",
+        "Straight Flush",
+        "Royal Flush",
+      ],
     };
   }
 
@@ -324,7 +337,7 @@ class App extends Component {
                   this.setState({ flop: [] }, () => {
                     this.setState({ turn: [] }, () => {
                       this.setState({ river: [] }, () => {
-                        this.setState({dealHoleCards: true});
+                        this.setState({ dealHoleCards: true });
                         // Deal hole cards if API call returned deck with non zero length
                         if (this.state.cards.length !== 0) {
                           const playerCards = this.state.cards.slice(0, 2);
@@ -416,7 +429,49 @@ class App extends Component {
   showDown = () => {
     // Display bot cards
     this.setState({ showBotCards: true }, () => {
-      this.setState({ finishedHand: true }, () => {});
+      this.setState({ finishedHand: true }, () => {
+        if (
+          this.state.rank.indexOf(
+            document.getElementById("playerHand").textContent
+          ) >
+          this.state.rank.indexOf(
+            document.getElementById("botHand").textContent
+          )
+        ) {
+          const players = this.state.players;
+          players[0].turn = false;
+          players[0].stackSize += this.state.potSize;
+          this.setState({ players }, () => {
+            this.setState({ potSize: 0 }, () => {
+              this.finishHand();
+            });
+          });
+        } else if (
+          this.state.rank.indexOf(
+            document.getElementById("playerHand").textContent
+          ) <
+          this.state.rank.indexOf(
+            document.getElementById("botHand").textContent
+          )
+        ) {
+          const players = this.state.players;
+          players[0].turn = false;
+          players[1].stackSize += this.state.potSize;
+          this.setState({ players }, () => {
+            this.setState({ potSize: 0 }, () => {
+              this.finishHand();
+            });
+          });
+        } else {
+          const players = this.state.players;
+          players[0].turn = false;
+          this.setState({ players }, () => {
+            this.setState({ potSize: 0 }, () => {
+              this.finishHand();
+            });
+          });
+        }
+      });
     });
   };
 
@@ -509,21 +564,20 @@ class App extends Component {
           />
           <p id="pot">{"Pot size: " + this.state.potSize}</p>
         </main>
-        <span>
-              {this.state.dealHoleCards ? (
-                <Hand
-                holeCards={this.state.players[0].playerCards}
-                flop={this.state.flop}
-                turn={this.state.turn}
-                river={this.state.river}
-                dealHoleCards={this.state.dealHoleCards}
-                dealFlop={this.state.dealFlop}
-                dealTurn={this.state.dealTurn}
-                dealRiver={this.state.dealRiver}
-              ></Hand>
-              ) : null}
-            </span>
-        
+        <span id="playerHand">
+          {this.state.dealHoleCards ? (
+            <Hand
+              holeCards={this.state.players[0].playerCards}
+              flop={this.state.flop}
+              turn={this.state.turn}
+              river={this.state.river}
+              dealHoleCards={this.state.dealHoleCards}
+              dealFlop={this.state.dealFlop}
+              dealTurn={this.state.dealTurn}
+              dealRiver={this.state.dealRiver}
+            ></Hand>
+          ) : null}
+        </span>
         <HoleCards holeCards={this.state.players[0].playerCards}></HoleCards>
         <Board
           dealFlop={this.state.dealFlop}
@@ -534,6 +588,20 @@ class App extends Component {
           river={this.state.river}
         ></Board>
         <div>
+          <span id="botHand">
+            {this.state.showBotCards ? (
+              <Hand
+                holeCards={this.state.players[1].botCards}
+                flop={this.state.flop}
+                turn={this.state.turn}
+                river={this.state.river}
+                dealHoleCards={this.state.dealHoleCards}
+                dealFlop={this.state.dealFlop}
+                dealTurn={this.state.dealTurn}
+                dealRiver={this.state.dealRiver}
+              ></Hand>
+            ) : null}
+          </span>
           {this.state.showBotCards ? (
             <HoleCards holeCards={this.state.players[1].botCards}></HoleCards>
           ) : null}
