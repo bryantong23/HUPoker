@@ -1,10 +1,7 @@
-import logo from "./logo.svg";
 import "./App.css";
-import PlayerBanner from "./components/playerBanner";
 import Players from "./components/players";
 import React, { Component } from "react";
 import axios from "axios";
-import Card from "./components/card";
 import HoleCards from "./components/holeCards";
 import Board from "./components/board";
 import Hand from "./components/hand";
@@ -187,7 +184,7 @@ class App extends Component {
 
   // Handle raise from player
   handleRaise = (amount) => {
-    const raiseAmount = parseInt(amount);
+    var raiseAmount = parseInt(amount);
     const players = this.state.players;
     // Can only raise max of stack size
     if (raiseAmount > players[0].stackSize) raiseAmount = players[0].stackSize;
@@ -391,7 +388,6 @@ class App extends Component {
 
   // Deal next card(s)
   dealNext = () => {
-    const players = this.state.players;
     // Set betOutstanding to 0 and determine which street to deal and display
     this.setState({ betOutstanding: 0 }, () => {
       if (this.state.flop.length === 0) this.dealFlop();

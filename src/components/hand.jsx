@@ -55,8 +55,8 @@ class Hand extends Component {
     for (var i = 0; i < holeCards.length; i++) {
       cards.push(holeCards[i].code);
     }
-    for (var i = 0; i < flop.length; i++) {
-      cards.push(flop[i].code);
+    for (var j = 0; j < flop.length; j++) {
+      cards.push(flop[j].code);
     }
     return this.state.rank[this.evaluateFiveCardHand(cards)];
   };
@@ -67,15 +67,15 @@ class Hand extends Component {
     for (var i = 0; i < holeCards.length; i++) {
       cards.push(holeCards[i].code);
     }
-    for (var i = 0; i < flop.length; i++) {
-      cards.push(flop[i].code);
+    for (var j = 0; j < flop.length; j++) {
+      cards.push(flop[j].code);
     }
     cards.push(turn[0].code);
     // Loop through possible 5 hand combos and return hand with highest strength
     var high = 0;
-    for (var i = 0; i < 6; i++) {
+    for (var k = 0; k < 6; k++) {
       var tempCards = cards.slice();
-      tempCards.splice(i, 1);
+      tempCards.splice(k, 1);
       if (this.evaluateFiveCardHand(tempCards) > high)
         high = this.evaluateFiveCardHand(tempCards);
     }
@@ -88,18 +88,18 @@ class Hand extends Component {
     for (var i = 0; i < holeCards.length; i++) {
       cards.push(holeCards[i].code);
     }
-    for (var i = 0; i < flop.length; i++) {
-      cards.push(flop[i].code);
+    for (var j = 0; j < flop.length; j++) {
+      cards.push(flop[j].code);
     }
     cards.push(turn[0].code);
     cards.push(river[0].code);
     var high = 0;
     // Loop through possible 5 hand combos and return hand with highest strength
-    for (var i = 0; i < cards.length - 1; i++) {
-      for (var j = 1; j < cards.length; j++) {
+    for (var k = 0; k < cards.length - 1; k++) {
+      for (var l = 1; l < cards.length; l++) {
         var tempCards = cards.slice();
-        tempCards.splice(i, 1);
-        tempCards.splice(j - 1, 1);
+        tempCards.splice(k, 1);
+        tempCards.splice(l - 1, 1);
         if (this.evaluateFiveCardHand(tempCards) > high)
           high = this.evaluateFiveCardHand(tempCards);
       }
@@ -144,10 +144,10 @@ class Hand extends Component {
     if (set.size === 2) {
       var uniqueVals = Array.from(set);
       // If one of the elements occurs 4 times then it is four of a kind
-      for (var i = 0; i < uniqueVals.length; i++) {
+      for (var k = 0; k < uniqueVals.length; k++) {
         var valCount = 0;
         for (var j = 0; j < vals.length; j++) {
-          if (vals[j] === uniqueVals[i]) valCount++;
+          if (vals[j] === uniqueVals[k]) valCount++;
           if (valCount === 4) return true;
         }
       }
@@ -168,10 +168,10 @@ class Hand extends Component {
     if (set.size === 2) {
       var uniqueVals = Array.from(set);
       // If one of the elements occurs 3 times then it is full house
-      for (var i = 0; i < uniqueVals.length; i++) {
+      for (var k = 0; k < uniqueVals.length; k++) {
         var valCount = 0;
         for (var j = 0; j < vals.length; j++) {
-          if (vals[j] === uniqueVals[i]) valCount++;
+          if (vals[j] === uniqueVals[k]) valCount++;
           if (valCount === 3) return true;
         }
       }
@@ -214,8 +214,8 @@ class Hand extends Component {
       return true;
     // If not a wheel straight determine if it's a regular straight
     // In order to be a regular straight value at index + 1 must be 1 greater than value at index
-    for (var i = 0; i < indices.length - 1; i++) {
-      if (indices[i] + 1 !== indices[i + 1]) return false;
+    for (var j = 0; j < indices.length - 1; j++) {
+      if (indices[j] + 1 !== indices[j + 1]) return false;
     }
     return true;
   }
@@ -224,8 +224,8 @@ class Hand extends Component {
   isTrips(cards) {
     // Add all the values of the cards to array 'vals'
     var vals = [];
-    for (var i = 0; i < cards.length; i++) {
-      vals.push(cards[i].substr(0, 1));
+    for (var k = 0; k < cards.length; k++) {
+      vals.push(cards[k].substr(0, 1));
     }
     // Create a set from array 'vals'
     var set = new Set(vals);

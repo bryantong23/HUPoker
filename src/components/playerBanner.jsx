@@ -10,12 +10,7 @@ class PlayerBanner extends Component {
     return (
       <React.Fragment>
         {this.props.children}
-        <input
-          type="text"
-          id="name"
-          name="name"
-          placeholder={this.props.player.name}
-        ></input>
+        <input type="text" placeholder={this.props.player.name}></input>
         <span>{this.props.player.stackSize}</span>
         <br></br>
         <p id="position">{this.props.player.position === 0 ? "D" : "BB"}</p>
