@@ -430,6 +430,7 @@ class App extends Component {
     // Display bot cards
     this.setState({ showBotCards: true }, () => {
       this.setState({ finishedHand: true }, () => {
+        // If player had a stronger unique hand
         if (
           this.state.rank.indexOf(
             document.getElementById("playerHand").textContent
@@ -446,6 +447,7 @@ class App extends Component {
               this.finishHand();
             });
           });
+          // If bot had a stronger unique hand
         } else if (
           this.state.rank.indexOf(
             document.getElementById("playerHand").textContent
@@ -462,6 +464,7 @@ class App extends Component {
               this.finishHand();
             });
           });
+          // If both players had same main hand, look for kickers
         } else {
           const players = this.state.players;
           players[0].turn = false;
