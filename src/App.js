@@ -11,15 +11,6 @@ import {
   evaluateFlop,
   evaluateRiver,
   evaluateTurn,
-  isRoyalFlush,
-  isStraightFlush,
-  isFourOfAKind,
-  isFullHouse,
-  isFlush,
-  isStraight,
-  isTrips,
-  isTwoPair,
-  isPair,
 } from "./components/HandEvaluator.js";
 
 const API_URL = "https://deckofcardsapi.com/api/deck/new/shuffle/";
@@ -66,6 +57,7 @@ class App extends Component {
       dealFlop: false,
       dealTurn: false,
       dealRiver: false,
+      showedCards: false,
       dealHoleCards: false,
       betOutstanding: 0,
       showBotCards: false,
@@ -235,7 +227,6 @@ class App extends Component {
       players[1].stackSize += this.state.potSize;
       this.setState({ players }, () => {
         this.setState({ potSize: 0 }, () => {
-          console.log("fold");
           this.finishHand();
         });
       });
@@ -351,6 +342,7 @@ class App extends Component {
                     this.setState({ turn: [] }, () => {
                       this.setState({ river: [] }, () => {
                         this.setState({ dealHoleCards: true });
+                        this.setState({ showedCards: false });
                         // Deal hole cards if API call returned deck with non zero length
                         if (this.state.cards.length !== 0) {
                           const playerCards = this.state.cards.slice(0, 2);
@@ -390,6 +382,7 @@ class App extends Component {
     }
     // If player is BB, initialize stack sizes and bet amounts accordingly and call botAction()
     else {
+      players[0].turn = false;
       players[1].turn = true;
       players[0].betAmount = this.state.bigBlind;
       players[0].stackSize -= this.state.bigBlind;
@@ -409,7 +402,7 @@ class App extends Component {
       if (this.state.flop.length === 0) this.dealFlop();
       else if (this.state.turn.length === 0) this.dealTurn();
       else if (this.state.river.length === 0) this.dealRiver();
-      else this.showDown();
+      else if (!this.state.showedCards) this.showDown();
     });
   };
 
@@ -442,66 +435,68 @@ class App extends Component {
     // Display bot cards
     this.setState({ showBotCards: true }, () => {
       this.setState({ finishedHand: true }, () => {
-        // If player had a stronger unique hand
-        if (
-          evaluateRiver(
-            this.state.players[0].playerCards,
-            this.state.flop,
-            this.state.turn,
-            this.state.river
-          ) >
-          evaluateRiver(
-            this.state.players[1].botCards,
-            this.state.flop,
-            this.state.turn,
-            this.state.river
-          )
-        ) {
-          const players = this.state.players;
-          players[0].turn = false;
-          players[0].stackSize += this.state.potSize;
-          this.setState({ players }, () => {
-            this.setState({ potSize: 0 }, () => {
-              console.log("player won");
-              this.finishHand();
+        this.setState({ showedCards: true }, () => {
+          // If player had a stronger unique hand
+          if (
+            evaluateRiver(
+              this.state.players[0].playerCards,
+              this.state.flop,
+              this.state.turn,
+              this.state.river
+            )[2] >
+            evaluateRiver(
+              this.state.players[1].botCards,
+              this.state.flop,
+              this.state.turn,
+              this.state.river
+            )[2]
+          ) {
+            const players = this.state.players;
+            players[0].turn = false;
+            players[0].stackSize += this.state.potSize;
+            this.setState({ players }, () => {
+              this.setState({ potSize: 0 }, () => {
+                this.finishHand();
+                return;
+              });
             });
-          });
-          // If bot had a stronger unique hand
-        } else if (
-          evaluateRiver(
-            this.state.players[0].playerCards,
-            this.state.flop,
-            this.state.turn,
-            this.state.river
-          ) <
-          evaluateRiver(
-            this.state.players[1].botCards,
-            this.state.flop,
-            this.state.turn,
-            this.state.river
-          )
-        ) {
-          const players = this.state.players;
-          players[0].turn = false;
-          players[1].stackSize += this.state.potSize;
-          this.setState({ players }, () => {
-            this.setState({ potSize: 0 }, () => {
-              console.log("bot won");
-              this.finishHand();
+            // If bot had a stronger unique hand
+          } else if (
+            evaluateRiver(
+              this.state.players[0].playerCards,
+              this.state.flop,
+              this.state.turn,
+              this.state.river
+            )[2] <
+            evaluateRiver(
+              this.state.players[1].botCards,
+              this.state.flop,
+              this.state.turn,
+              this.state.river
+            )[2]
+          ) {
+            const players = this.state.players;
+            players[0].turn = false;
+            players[1].stackSize += this.state.potSize;
+            this.setState({ players }, () => {
+              this.setState({ potSize: 0 }, () => {
+                this.finishHand();
+                return;
+              });
             });
-          });
-          // If both players had same main hand, look for kickers
-        } else {
-          this.splitPot();
-          const players = this.state.players;
-          players[0].turn = false;
-          this.setState({ players }, () => {
-            this.setState({ potSize: 0 }, () => {
-              console.log("tie");
-              this.finishHand();
+            // If both players had same main hand, look for kickers
+          } else {
+            this.splitPot();
+            const players = this.state.players;
+            players[0].turn = false;
+            this.setState({ players }, () => {
+              this.setState({ potSize: 0 }, () => {
+                this.finishHand();
+                return;
+              });
             });
-          });
-        }
+          }
+        });
       });
     });
   };

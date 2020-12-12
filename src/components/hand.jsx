@@ -1,19 +1,9 @@
 import React, { Component } from "react";
 import {
   evaluateHoleCards,
-  evaluateFiveCardHand,
   evaluateFlop,
   evaluateRiver,
   evaluateTurn,
-  isRoyalFlush,
-  isStraightFlush,
-  isFourOfAKind,
-  isFullHouse,
-  isFlush,
-  isStraight,
-  isTrips,
-  isTwoPair,
-  isPair,
 } from "./HandEvaluator.js";
 
 // Component to represent each player's hand
