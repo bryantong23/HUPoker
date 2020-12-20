@@ -80,7 +80,6 @@ export const evaluateTurn = (holeCards, flop, turn) => {
       bestCards = tempCards;
     }
   }
-  console.log(rank[highHand], bestCards, highScore);
   return [rank[highHand], bestCards, highScore];
 };
 
@@ -117,7 +116,6 @@ export const evaluateRiver = (holeCards, flop, turn, river) => {
       }
     }
   }
-  console.log(rank[highHand], bestCards, highScore);
   return [rank[highHand], bestCards, highScore];
 };
 
@@ -341,7 +339,6 @@ export const isPair = (cards) => {
     for (var j = 0; j < vals.length; j++) {
       score += values.indexOf(vals[j]);
     }
-    //console.log(score);
     return [true, score];
   }
   return false;
@@ -353,6 +350,5 @@ export const highCard = (cards) => {
   for (var i = 0; i < cards.length; i++) {
     score += values.indexOf(cards[i].substr(0, 1));
   }
-  //console.log(score);
   return score;
 };

@@ -12,6 +12,7 @@ import {
   evaluateRiver,
   evaluateTurn,
 } from "./components/HandEvaluator.js";
+import * as tf from "@tensorflow/tfjs";
 
 const API_URL = "https://deckofcardsapi.com/api/deck/new/shuffle/";
 
@@ -86,6 +87,10 @@ class App extends Component {
     const cards = await axios
       .get(`https://deckofcardsapi.com/api/deck/${data.deck_id}/draw/?count=52`)
       .then((e) => e.data.cards);
+
+    const model = await tf.loadLayersModel(
+      "/Users/bryan/Documents/HUPoker/assets/model.json"
+    );
 
     this.setState({ cards });
   }
@@ -286,6 +291,13 @@ class App extends Component {
         setTimeout(() => {
           this.dealNext();
         }, 1500);
+      } else if (
+        players[1].position === 0 &&
+        players[0].betAmount > this.state.bigBlind
+      ) {
+        setTimeout(() => {
+          this.dealNext();
+        });
       }
     }
   };
