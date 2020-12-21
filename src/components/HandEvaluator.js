@@ -129,7 +129,7 @@ export const isRoyalFlush = (cards) => {
         for (var j = 0; j < cards.length; j++) {
           if (cards[j].includes("0")) {
             score +=
-              rank.indexOf("Royal Flush") * 100 +
+              rank.indexOf("Royal Flush") * 1000000 +
               values.indexOf("A") +
               values.indexOf("K") +
               values.indexOf("Q") +
@@ -149,7 +149,7 @@ export const isStraightFlush = (cards) => {
   let score = 0;
   // Must be a straight and a flush
   if (isFlush(cards) && isStraight(cards)) {
-    score += rank.indexOf("Straight Flush") * 100;
+    score += rank.indexOf("Straight Flush") * 1000000;
     for (var i = 0; i < cards.length; i++) {
       score += values.indexOf(cards[i].substr(0, 1));
     }
@@ -164,8 +164,11 @@ export const isFourOfAKind = (cards) => {
   // Add all the values of the cards to array 'vals'
   var vals = [];
   for (var i = 0; i < cards.length; i++) {
-    vals.push(cards[i].substr(0, 1));
+    vals.push(values.indexOf(cards[i].substr(0, 1)));
   }
+  vals.sort(function (a, b) {
+    return a - b;
+  });
   // Create a set from array 'vals'
   var set = new Set(vals);
   // Can only be four of a kind if size of set is 2
@@ -177,10 +180,19 @@ export const isFourOfAKind = (cards) => {
       for (var j = 0; j < vals.length; j++) {
         if (vals[j] === uniqueVals[k]) valCount++;
         if (valCount === 4) {
-          score += rank.indexOf("Four of a kind") * 100;
-          for (var l = 0; l < vals.length; l++) {
-            score += values.indexOf(vals[l]);
+          score += rank.indexOf("Four of a kind") * 1000000;
+          for (var l = 0; l < vals.length - 1; l++) {
+            if (vals[l] == vals[l + 1]) {
+              score += vals[l] * 1000;
+              break;
+            }
           }
+          score +=
+            vals[vals.length - 1] * 20 +
+            vals[vals.length - 2] * 10 +
+            vals[vals.length - 3] * 7 +
+            vals[vals.length - 4] * 5 +
+            vals[vals.length - 5] * 2;
           return [true, score];
         }
       }
@@ -195,8 +207,11 @@ export const isFullHouse = (cards) => {
   // Add all the values of the cards to array 'vals'
   var vals = [];
   for (var i = 0; i < cards.length; i++) {
-    vals.push(cards[i].substr(0, 1));
+    vals.push(values.indexOf(cards[i].substr(0, 1)));
   }
+  vals.sort(function (a, b) {
+    return a - b;
+  });
   // Create a set from array 'vals'
   var set = new Set(vals);
   // Can only be full house if size of set is 2
@@ -208,10 +223,19 @@ export const isFullHouse = (cards) => {
       for (var j = 0; j < vals.length; j++) {
         if (vals[j] === uniqueVals[k]) valCount++;
         if (valCount === 3) {
-          score += rank.indexOf("Full House") * 100;
-          for (var l = 0; l < vals.length; l++) {
-            score += values.indexOf(vals[l]);
+          score += rank.indexOf("Full House") * 1000000;
+          for (var l = 0; l < vals.length - 2; l++) {
+            if ((vals[l] == vals[l + 1]) == vals[l + 2]) {
+              score += vals[l] * 1000;
+              break;
+            }
           }
+          score +=
+            vals[vals.length - 1] * 20 +
+            vals[vals.length - 2] * 10 +
+            vals[vals.length - 3] * 7 +
+            vals[vals.length - 4] * 5 +
+            vals[vals.length - 5] * 2;
           return [true, score];
         }
       }
@@ -232,7 +256,7 @@ export const isFlush = (cards) => {
   var set = new Set(suits);
   // Can only be flush if size of set is 1
   if (set.size === 1) {
-    score += rank.indexOf("Flush") * 100;
+    score += rank.indexOf("Flush") * 1000000;
     for (var j = 0; j < cards.length; j++) {
       score += values.indexOf(cards[j].substr(0, 1));
     }
@@ -258,7 +282,7 @@ export const isStraight = (cards) => {
     indices.length === wheel.length &&
     indices.every((value, index) => value === wheel[index])
   ) {
-    score += rank.indexOf("Straight") * 100 + 3;
+    score += rank.indexOf("Straight") * 1000000 + 3;
     return [true, score];
   }
   // If not a wheel straight determine if it's a regular straight
@@ -266,7 +290,7 @@ export const isStraight = (cards) => {
   for (var j = 0; j < indices.length - 1; j++) {
     if (indices[j] + 1 !== indices[j + 1]) return false;
   }
-  score += rank.indexOf("Straight") * 100 + indices[indices.length - 1];
+  score += rank.indexOf("Straight") * 1000000 + indices[indices.length - 1];
   return [true, score];
 };
 
@@ -276,8 +300,11 @@ export const isTrips = (cards) => {
   // Add all the values of the cards to array 'vals'
   var vals = [];
   for (var k = 0; k < cards.length; k++) {
-    vals.push(cards[k].substr(0, 1));
+    vals.push(values.indexOf(cards[k].substr(0, 1)));
   }
+  vals.sort(function (a, b) {
+    return a - b;
+  });
   // Create a set from array 'vals'
   var set = new Set(vals);
   // Can only be trips if size of set is 3
@@ -289,10 +316,19 @@ export const isTrips = (cards) => {
       for (var j = 0; j < vals.length; j++) {
         if (vals[j] === uniqueVals[i]) valCount++;
         if (valCount === 3) {
-          score += rank.indexOf("Three of a kind") * 100;
-          for (var l = 0; l < vals.length; l++) {
-            score += values.indexOf(vals[l]);
+          score += rank.indexOf("Three of a kind") * 1000000;
+          for (var l = 0; l < vals.length - 1; l++) {
+            if (vals[l] == vals[l + 1]) {
+              score += vals[l] * 1000;
+              break;
+            }
           }
+          score +=
+            vals[vals.length - 1] * 20 +
+            vals[vals.length - 2] * 10 +
+            vals[vals.length - 3] * 7 +
+            vals[vals.length - 4] * 5 +
+            vals[vals.length - 5] * 2;
           return [true, score];
         }
       }
@@ -307,17 +343,26 @@ export const isTwoPair = (cards) => {
   // Add all the values of the cards to array 'vals'
   var vals = [];
   for (var i = 0; i < cards.length; i++) {
-    vals.push(cards[i].substr(0, 1));
+    vals.push(values.indexOf(cards[i].substr(0, 1)));
   }
+  vals.sort(function (a, b) {
+    return a - b;
+  });
   // Create a set from array 'vals'
   var set = new Set(vals);
   // Can only be two pair of size of set is 3
   if (set.size === 3) {
     // Since we already checked for trips in function that called this function, the only other hand with set of size 3 is two pair
-    score += rank.indexOf("Two pair") * 100;
-    for (var j = 0; j < vals.length; j++) {
-      score += values.indexOf(vals[j]);
+    score += rank.indexOf("Two pair") * 1000000;
+    for (var j = 0; j < vals.length - 1; j++) {
+      if (vals[j] == vals[j + 1]) score += vals[j] * 1000;
     }
+    score +=
+      vals[vals.length - 1] * 20 +
+      vals[vals.length - 2] * 10 +
+      vals[vals.length - 3] * 7 +
+      vals[vals.length - 4] * 5 +
+      vals[vals.length - 5] * 2;
     return [true, score];
   }
   return false;
@@ -329,16 +374,25 @@ export const isPair = (cards) => {
   // Add all the values of the cards to array 'vals'
   var vals = [];
   for (var i = 0; i < cards.length; i++) {
-    vals.push(cards[i].substr(0, 1));
+    vals.push(values.indexOf(cards[i].substr(0, 1)));
   }
+  vals.sort(function (a, b) {
+    return a - b;
+  });
   // Create a set from array 'vals'
   var set = new Set(vals);
   // Can only be a pair of size of set is 4
   if (set.size === 4) {
-    score += rank.indexOf("Pair") * 100;
-    for (var j = 0; j < vals.length; j++) {
-      score += values.indexOf(vals[j]);
+    score += rank.indexOf("Pair") * 1000000;
+    for (var j = 0; j < vals.length - 1; j++) {
+      if (vals[j] == vals[j + 1]) score += vals[j] * 1000;
     }
+    score +=
+      vals[vals.length - 1] * 20 +
+      vals[vals.length - 2] * 10 +
+      vals[vals.length - 3] * 7 +
+      vals[vals.length - 4] * 5 +
+      vals[vals.length - 5] * 2;
     return [true, score];
   }
   return false;

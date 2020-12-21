@@ -64,7 +64,7 @@ class App extends Component {
       showBotCards: false,
       finishedHand: false,
       startedGame: false,
-
+      model: null,
       rank: [
         "High card",
         "Pair",
@@ -88,11 +88,16 @@ class App extends Component {
       .get(`https://deckofcardsapi.com/api/deck/${data.deck_id}/draw/?count=52`)
       .then((e) => e.data.cards);
 
-    const model = await tf.loadLayersModel(
-      "/Users/bryan/Documents/HUPoker/assets/model.json"
-    );
+    // const model = await tf.loadLayersModel(
+    //   "/Users/bryan/Documents/HUPoker/assets/model.json"
+    // );
 
-    this.setState({ cards });
+    // const model1 = JSON.parse("model.json");
+    // const model = await tf.models.modelFromJSON(model1);
+
+    this.setState({ cards }, () => {
+      //this.setState({ model: model });
+    });
   }
 
   // Handle check from player
