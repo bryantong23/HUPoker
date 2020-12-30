@@ -182,7 +182,7 @@ export const isFourOfAKind = (cards) => {
         if (valCount === 4) {
           score += rank.indexOf("Four of a kind") * 1000000;
           for (var l = 0; l < vals.length - 1; l++) {
-            if (vals[l] == vals[l + 1]) {
+            if (vals[l] === vals[l + 1]) {
               score += vals[l] * 1000;
               break;
             }
@@ -225,7 +225,7 @@ export const isFullHouse = (cards) => {
         if (valCount === 3) {
           score += rank.indexOf("Full House") * 1000000;
           for (var l = 0; l < vals.length - 2; l++) {
-            if ((vals[l] == vals[l + 1]) == vals[l + 2]) {
+            if ((vals[l] === vals[l + 1]) === vals[l + 2]) {
               score += vals[l] * 1000;
               break;
             }
@@ -318,7 +318,7 @@ export const isTrips = (cards) => {
         if (valCount === 3) {
           score += rank.indexOf("Three of a kind") * 1000000;
           for (var l = 0; l < vals.length - 1; l++) {
-            if (vals[l] == vals[l + 1]) {
+            if (vals[l] === vals[l + 1]) {
               score += vals[l] * 1000;
               break;
             }
@@ -355,7 +355,7 @@ export const isTwoPair = (cards) => {
     // Since we already checked for trips in function that called this function, the only other hand with set of size 3 is two pair
     score += rank.indexOf("Two pair") * 1000000;
     for (var j = 0; j < vals.length - 1; j++) {
-      if (vals[j] == vals[j + 1]) score += vals[j] * 1000;
+      if (vals[j] === vals[j + 1]) score += vals[j] * 1000;
     }
     score +=
       vals[vals.length - 1] * 20 +
@@ -385,7 +385,7 @@ export const isPair = (cards) => {
   if (set.size === 4) {
     score += rank.indexOf("Pair") * 1000000;
     for (var j = 0; j < vals.length - 1; j++) {
-      if (vals[j] == vals[j + 1]) score += vals[j] * 1000;
+      if (vals[j] === vals[j + 1]) score += vals[j] * 1000;
     }
     score +=
       vals[vals.length - 1] * 20 +
@@ -405,4 +405,138 @@ export const highCard = (cards) => {
     score += values.indexOf(cards[i].substr(0, 1));
   }
   return score;
+};
+
+export const botRiver = (
+  cards,
+  position,
+  stackSize,
+  betOutstanding,
+  betAmount
+) => {};
+
+export const botTurn = (
+  cards,
+  position,
+  stackSize,
+  betOutstanding,
+  betAmount
+) => {};
+
+export const botFlop = (
+  cards,
+  position,
+  stackSize,
+  betOutstanding,
+  betAmount
+) => {
+  var score = 0;
+};
+
+export const botPre = (
+  cards,
+  position,
+  stackSize,
+  betOutstanding,
+  betAmount
+) => {
+  var chenValues = [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 6, 7, 8, 10];
+  var score = 0;
+  console.log(cards);
+  if (cards[0].substr(0, 1) === cards[1].substr(0, 1)) {
+    score = Math.min(5, 2 * chenValues[values.indexOf(cards[0].substr(0, 1))]);
+  } else {
+    score += Math.max(
+      chenValues[values.indexOf(cards[0].substr(0, 1))],
+      chenValues[values.indexOf(cards[1].substr(0, 1))]
+    );
+    if (cards[0].substr(1, 2) === cards[1].substr(1, 2)) score += 2;
+    let gap = Math.abs(
+      values.indexOf(cards[0].substr(0, 1)) -
+        values.indexOf(cards[1].substr(0, 1))
+    );
+    if (gap === 2) score -= 1;
+    else if (gap === 3) score -= 2;
+    else if (gap === 4) score -= 4;
+    else score -= 5;
+
+    if (
+      Math.max(
+        chenValues[values.indexOf(cards[0].substr(0, 1))],
+        chenValues[values.indexOf(cards[1].substr(0, 1))]
+      ) < 7
+    ) {
+      if (gap <= 2) score += 1;
+    }
+  }
+  score = Math.max(0, Math.ceil(score) / 20);
+  let decision = "";
+  let raiseAmount = 0;
+  if (betOutstanding === 0) {
+    if (Math.random() < score) {
+      decision = "r";
+      raiseAmount = Math.min(stackSize, betAmount * 2.5);
+    } else {
+      decision = "k";
+    }
+  } else {
+    if (position === 0) {
+      if (score < 0.15) {
+        if (Math.random() < 0.7) decision = "f";
+        else if (Math.random() < 0.5) decision = "c";
+        else {
+          decision = "r";
+          raiseAmount = Math.min(stackSize, betAmount * 2.5);
+        }
+      } else if (score < 0.35) {
+        if (Math.random() < 0.15) decision = "f";
+        else if (Math.random() < 0.4) decision = "c";
+        else {
+          decision = "r";
+          raiseAmount = Math.min(stackSize, betAmount * 2.5);
+        }
+      } else if (score < 0.5) {
+        if (Math.random() < 0.3) decision = "c";
+        else {
+          decision = "r";
+          raiseAmount = Math.min(stackSize, betAmount * 2.5);
+        }
+      } else {
+        if (Math.random() < 0.5) decision = "c";
+        else {
+          decision = "r";
+          raiseAmount = Math.min(stackSize, betAmount * 2.5);
+        }
+      }
+    } else {
+      if (score < 0.15) {
+        if (Math.random() < 0.9) decision = "f";
+        else if (Math.random() < 0.5) decision = "c";
+        else {
+          decision = "r";
+          raiseAmount = Math.min(stackSize, betAmount * 2.5);
+        }
+      } else if (score < 0.35) {
+        if (Math.random() < 0.4) decision = "f";
+        else if (Math.random() < 0.4) decision = "c";
+        else {
+          decision = "r";
+          raiseAmount = Math.min(stackSize, betAmount * 2.5);
+        }
+      } else if (score < 0.5) {
+        if (Math.random() < 0.4) decision = "c";
+        else {
+          decision = "r";
+          raiseAmount = Math.min(stackSize, betAmount * 2.5);
+        }
+      } else {
+        if (Math.random() < 0.5) decision = "c";
+        else {
+          decision = "r";
+          raiseAmount = Math.min(stackSize, betAmount * 2.5);
+        }
+      }
+    }
+  }
+  return [decision, raiseAmount];
 };
