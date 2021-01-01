@@ -161,23 +161,44 @@ class App extends Component {
         players[0].betAmount = players[1].betAmount;
       }
       // Update state and variables, deal next card(s), and have either bot or player go
+      const newPotSize = this.state.potSize + this.state.betOutstanding;
+      this.setState({ potSize: newPotSize }, () => {
+        this.setState({ betOutstanding: 0 });
+      });
+
       if (players[0].position === 0) {
         players[0].turn = false;
         players[1].turn = true;
+        if (this.state.dealFlop) {
+          this.setState({ players }, () => {
+            setTimeout(() => {
+              this.dealNext();
+            }, 1500);
+          });
+        } else {
+          if (players[1].betAmount !== this.state.bigBlind) {
+            this.setState({ players }, () => {
+              setTimeout(() => {
+                this.dealNext();
+              }, 1500);
+            });
+          } else {
+            this.setState({ players }, () => {
+              setTimeout(() => {
+                this.botAction();
+              }, 1500);
+            });
+          }
+        }
       } else {
         players[0].turn = true;
         players[1].turn = false;
-      }
-      const newPotSize = this.state.potSize + this.state.betOutstanding;
-      this.setState({ potSize: newPotSize }, () => {
-        this.setState({ betOutstanding: 0 }, () => {
-          if (players[0].position === 0) {
-            setTimeout(() => {
-              this.botAction();
-            }, 3000);
-          }
+        this.setState({ players }, () => {
+          setTimeout(() => {
+            this.dealNext();
+          }, 1500);
         });
-      });
+      }
     }
   };
 
@@ -257,41 +278,77 @@ class App extends Component {
     cards.push(this.state.players[1].botCards[0].code);
     cards.push(this.state.players[1].botCards[1].code);
     if (this.state.dealRiver) {
-      for (var i = 0; i < 3; i++) {
-        cards.push(this.state.flop[i].code);
-      }
-      cards.push(this.state.turn[0].code);
-      cards.push(this.state.river[0].code);
-      const decision = botRiver(
-        cards,
+      const [decision, raiseAmount] = botRiver(
+        this.state.players[1].botCards,
+        this.state.flop,
+        this.state.turn,
+        this.state.river,
         this.state.players[1].position,
         this.state.players[1].stackSize,
         this.state.betOutstanding,
         this.state.players[0].betAmount
       );
+      if (decision === "f") {
+        console.log("fold");
+        this.botFold();
+      } else if (decision === "c") {
+        this.botCall();
+        console.log("call");
+      } else if (decision === "k") {
+        this.botCheck();
+        console.log("check");
+      } else {
+        this.botRaise(raiseAmount);
+        console.log("raise");
+      }
     } else if (this.state.dealTurn) {
-      for (var i = 0; i < 3; i++) {
-        cards.push(this.state.flop[i].code);
-      }
-      cards.push(this.state.turn[0].code);
-      const decision = botTurn(
-        cards,
+      const [decision, raiseAmount] = botTurn(
+        this.state.players[1].botCards,
+        this.state.flop,
+        this.state.turn,
         this.state.players[1].position,
         this.state.players[1].stackSize,
         this.state.betOutstanding,
         this.state.players[0].betAmount
       );
+      if (decision === "f") {
+        console.log("fold");
+        this.botFold();
+      } else if (decision === "c") {
+        this.botCall();
+        console.log("call");
+      } else if (decision === "k") {
+        this.botCheck();
+        console.log("check");
+      } else {
+        this.botRaise(raiseAmount);
+        console.log("raise");
+      }
     } else if (this.state.dealFlop) {
       for (var i = 0; i < 3; i++) {
         cards.push(this.state.flop[i].code);
       }
-      const decision = botFlop(
-        cards,
+      const [decision, raiseAmount] = botFlop(
+        this.state.players[1].botCards,
+        this.state.flop,
         this.state.players[1].position,
         this.state.players[1].stackSize,
         this.state.betOutstanding,
         this.state.players[0].betAmount
       );
+      if (decision === "f") {
+        console.log("fold");
+        this.botFold();
+      } else if (decision === "c") {
+        this.botCall();
+        console.log("call");
+      } else if (decision === "k") {
+        this.botCheck();
+        console.log("check");
+      } else {
+        this.botRaise(raiseAmount);
+        console.log("raise");
+      }
     } else {
       const [decision, raiseAmount] = botPre(
         cards,
@@ -513,6 +570,7 @@ class App extends Component {
     const flop = this.state.cards.slice(4, 7);
     this.setState({ dealFlop: true });
     this.setState({ flop: flop });
+    if (this.state.players[1].position === 1) this.botAction();
   };
 
   // Method to determine and deal turn
@@ -521,6 +579,7 @@ class App extends Component {
     const turn = this.state.cards.slice(7, 8);
     this.setState({ dealTurn: true });
     this.setState({ turn: turn });
+    if (this.state.players[1].position === 1) this.botAction();
   };
 
   // Method to determine and deal river
@@ -529,6 +588,7 @@ class App extends Component {
     const river = this.state.cards.slice(8, 9);
     this.setState({ dealRiver: true });
     this.setState({ river: river });
+    if (this.state.players[1].position === 1) this.botAction();
   };
 
   // Method to deal with hand if it goes to showdown

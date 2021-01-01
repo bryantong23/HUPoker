@@ -1,3 +1,5 @@
+import { getConfig } from "@testing-library/react";
+
 var values = ["2", "3", "4", "5", "6", "7", "8", "9", "0", "J", "Q", "K", "A"];
 var rank = [
   "High card",
@@ -48,7 +50,8 @@ export const evaluateFlop = (holeCards, flop) => {
   for (var j = 0; j < flop.length; j++) {
     cards.push(flop[j].code);
   }
-  return [rank[evaluateFiveCardHand(cards)[0]], cards];
+  const [handRank, score] = evaluateFiveCardHand(cards);
+  return [rank[handRank], score, cards];
 };
 
 // Evaluate hand after turn
@@ -401,36 +404,87 @@ export const isPair = (cards) => {
 // Evaluate score for high card
 export const highCard = (cards) => {
   let score = 0;
+  var vals = [];
   for (var i = 0; i < cards.length; i++) {
-    score += values.indexOf(cards[i].substr(0, 1));
+    vals.push(values.indexOf(cards[i].substr(0, 1)));
   }
+  vals.sort(function (a, b) {
+    return a - b;
+  });
+  score +=
+    vals[vals.length - 1] * 1000 +
+    vals[vals.length - 2] * 500 +
+    vals[vals.length - 3] * 250 +
+    vals[vals.length - 4] * 100 +
+    vals[vals.length - 5] * 50;
   return score;
 };
 
 export const botRiver = (
-  cards,
-  position,
-  stackSize,
-  betOutstanding,
-  betAmount
-) => {};
-
-export const botTurn = (
-  cards,
-  position,
-  stackSize,
-  betOutstanding,
-  betAmount
-) => {};
-
-export const botFlop = (
-  cards,
+  botCards,
+  flop,
+  turn,
+  river,
   position,
   stackSize,
   betOutstanding,
   betAmount
 ) => {
-  var score = 0;
+  const [rank, hand, score] = evaluateTurn(botCards, flop, turn);
+  var cards = [];
+  for (var i = 0; i < 3; i++) cards.push(flop[i].code);
+  cards.push(turn[0].code);
+  cards.push(river[0].code);
+  let nutScore = 0;
+  for (var j = 0; j < 5; j++) {
+    var tempCards = cards.slice();
+    tempCards.splice(j, 1);
+    if (getNutHand(tempCards) > nutScore) nutScore = getNutHand(tempCards);
+  }
+  const ratio = score / nutScore;
+
+  return botDecision(ratio, position, betOutstanding, stackSize, betAmount);
+};
+
+export const botTurn = (
+  botCards,
+  flop,
+  turn,
+  position,
+  stackSize,
+  betOutstanding,
+  betAmount
+) => {
+  const [rank, hand, score] = evaluateTurn(botCards, flop, turn);
+  var cards = [];
+  for (var i = 0; i < 3; i++) cards.push(flop[i].code);
+  cards.push(turn[0].code);
+  let nutScore = 0;
+  for (var j = 0; j < 4; j++) {
+    var tempCards = cards.slice();
+    tempCards.splice(j, 1);
+    if (getNutHand(tempCards) > nutScore) nutScore = getNutHand(tempCards);
+  }
+  const ratio = score / nutScore;
+
+  return botDecision(ratio, position, betOutstanding, stackSize, betAmount);
+};
+
+export const botFlop = (
+  botCards,
+  flop,
+  position,
+  stackSize,
+  betOutstanding,
+  betAmount
+) => {
+  const [rank, score, hand] = evaluateFlop(botCards, flop);
+  var cards = [];
+  for (var i = 0; i < 3; i++) cards.push(flop[i].code);
+  const nutScore = getNutHand(cards);
+  const ratio = score / nutScore;
+
+  return botDecision(ratio, position, betOutstanding, stackSize, betAmount);
 };
 
 export const botPre = (
@@ -458,7 +512,7 @@ export const botPre = (
     if (gap === 2) score -= 1;
     else if (gap === 3) score -= 2;
     else if (gap === 4) score -= 4;
-    else score -= 5;
+    else if (gap >= 5) score -= 5;
 
     if (
       Math.max(
@@ -470,6 +524,16 @@ export const botPre = (
     }
   }
   score = Math.max(0, Math.ceil(score) / 20);
+  return botDecision(score, position, betOutstanding, stackSize, betAmount);
+};
+
+export const botDecision = (
+  score,
+  position,
+  betOutstanding,
+  stackSize,
+  betAmount
+) => {
   let decision = "";
   let raiseAmount = 0;
   if (betOutstanding === 0) {
@@ -482,14 +546,14 @@ export const botPre = (
   } else {
     if (position === 0) {
       if (score < 0.15) {
-        if (Math.random() < 0.7) decision = "f";
+        if (Math.random() < 0.6) decision = "f";
         else if (Math.random() < 0.5) decision = "c";
         else {
           decision = "r";
           raiseAmount = Math.min(stackSize, betAmount * 2.5);
         }
       } else if (score < 0.35) {
-        if (Math.random() < 0.15) decision = "f";
+        if (Math.random() < 0.1) decision = "f";
         else if (Math.random() < 0.4) decision = "c";
         else {
           decision = "r";
@@ -510,14 +574,14 @@ export const botPre = (
       }
     } else {
       if (score < 0.15) {
-        if (Math.random() < 0.9) decision = "f";
+        if (Math.random() < 0.7) decision = "f";
         else if (Math.random() < 0.5) decision = "c";
         else {
           decision = "r";
           raiseAmount = Math.min(stackSize, betAmount * 2.5);
         }
       } else if (score < 0.35) {
-        if (Math.random() < 0.4) decision = "f";
+        if (Math.random() < 0.2) decision = "f";
         else if (Math.random() < 0.4) decision = "c";
         else {
           decision = "r";
@@ -539,4 +603,136 @@ export const botPre = (
     }
   }
   return [decision, raiseAmount];
+};
+
+export const getNutHand = (cards) => {
+  var score = 0;
+  var vals = [];
+  for (var i = 0; i < 4; i++) {
+    vals.push(values.indexOf(cards[0].substr(0, 1)));
+  }
+
+  const [straightPotential, straightScore] = hasStraightPotential(cards);
+
+  if (hasFlushPotential(cards)) {
+    if (straightPotential) {
+      if (straightScore === 50) {
+        score += rank.indexOf("Royal Flush") * 1000000 + straightScore;
+      } else {
+        score += rank.indexOf("Straight Flush") * 1000000 + straightScore;
+      }
+    } else {
+      score += rank.indexOf("Flush") * 1000000;
+      for (var i = 0; i < cards.length; i++) {
+        score += values.indexOf(cards[i].substr(0, 1));
+      }
+      vals.sort(function (a, b) {
+        return a - b;
+      });
+      var newValues = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+      newValues = newValues.filter((el) => !vals.includes(el));
+      score +=
+        newValues[newValues.length - 1] + newValues[newValues.length - 2];
+    }
+  } else if (straightPotential) {
+    score += rank.indexOf("Straight") * 1000000 + (straightScore + 10) / 5;
+  } else if (isThreeOfTheSame(cards)) {
+    score +=
+      rank.indexOf("Four of a kind") * 1000000 +
+      values.indexOf(cards[0].substr(0, 1)) * 1000;
+    if (cards[0].substr(0, 1) !== 12) {
+      score += 12 * 20 + vals[0] * 24;
+    } else {
+      score += 526;
+    }
+  } else if (hasPair(cards)) {
+    score += rank.indexOf("Four of a kind") * 1000000;
+    var vals = [];
+    const fourOfAKind = 0;
+    for (var i = 0; i < vals.length - 1; i++) {
+      if (vals[i] === vals[i + 1]) score += vals[i] * 1000;
+      fourOfAKind = vals[i];
+    }
+    vals.push(fourOfAKind);
+    vals.push(fourOfAKind);
+    vals.sort(function (a, b) {
+      return a - b;
+    });
+    score +=
+      vals[vals.length - 1] * 20 +
+      vals[vals.length - 2] * 10 +
+      vals[vals.length - 3] * 7 +
+      vals[vals.length - 4] * 5 +
+      vals[vals.length - 5] * 2;
+  } else {
+    vals.sort(function (a, b) {
+      return a - b;
+    });
+    score += rank.indexOf("Three of a kind") * 1000000;
+    vals.push(vals[vals.length - 1]);
+    vals.push(vals[vals.length - 1]);
+    score +=
+      vals[vals.length - 1] * 20 +
+      vals[vals.length - 2] * 10 +
+      vals[vals.length - 3] * 7 +
+      vals[vals.length - 4] * 5 +
+      vals[vals.length - 5] * 2;
+  }
+
+  return score;
+};
+
+export const isThreeOfTheSame = (cards) => {
+  for (var i = 0; i < 2; i++) {
+    if (cards[i].substr(0, 1) !== cards[i + 1].substr(0, 1)) return false;
+  }
+  return true;
+};
+
+export const hasPair = (cards) => {
+  for (var i = 0; i < 2; i++) {
+    if (cards[i].substr(0, 1) === cards[i + 1].substr(0, 1)) return true;
+  }
+  return false;
+};
+
+export const hasFlushPotential = (cards) => {
+  for (var i = 0; i < 2; i++) {
+    if (cards[i].substr(1, 2) !== cards[i + 1].substr(1, 2)) return false;
+  }
+  return true;
+};
+
+export const hasStraightPotential = (cards) => {
+  var indices = [];
+  for (var i = 0; i < cards.length; i++) {
+    indices.push(values.indexOf(cards[i].substr(0, 1)));
+  }
+  indices.sort();
+  if (indices[2] === 12 && indices[0] < 4 && indices[1] < 4) return [true, 18];
+  else {
+    var gap = 0;
+    for (var i = 0; i < indices.length - 1; i++) {
+      gap += indices[i + 1] - indices[i];
+    }
+    if (gap === 4)
+      return [
+        true,
+        indices[2] +
+          (indices[2] - 1) +
+          indices[1] +
+          (indices[1] - 1) +
+          indices[0],
+      ];
+    else if (gap === 3) {
+      var highCard = Math.min(indices[2] + 1, 12);
+      var score = 5 * highCard - 10;
+      return [true, score];
+    } else if (gap === 3) {
+      var highCard = Math.min(indices[2] + 2, 12);
+      var score = 5 * highCard - 10;
+      return [true, score];
+    }
+  }
+  return [false, -1];
 };
