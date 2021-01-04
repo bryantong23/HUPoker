@@ -1,5 +1,3 @@
-import { getConfig } from "@testing-library/react";
-
 var values = ["2", "3", "4", "5", "6", "7", "8", "9", "0", "J", "Q", "K", "A"];
 var rank = [
   "High card",
@@ -428,7 +426,8 @@ export const botRiver = (
   position,
   stackSize,
   betOutstanding,
-  betAmount
+  betAmount,
+  potSize
 ) => {
   const [rank, hand, score] = evaluateTurn(botCards, flop, turn);
   var cards = [];
@@ -443,7 +442,14 @@ export const botRiver = (
   }
   const ratio = score / nutScore;
 
-  return botDecision(ratio, position, betOutstanding, stackSize, betAmount);
+  return botDecision(
+    ratio,
+    position,
+    betOutstanding,
+    stackSize,
+    betAmount,
+    potSize
+  );
 };
 
 export const botTurn = (
@@ -453,7 +459,8 @@ export const botTurn = (
   position,
   stackSize,
   betOutstanding,
-  betAmount
+  betAmount,
+  potSize
 ) => {
   const [rank, hand, score] = evaluateTurn(botCards, flop, turn);
   var cards = [];
@@ -467,7 +474,14 @@ export const botTurn = (
   }
   const ratio = score / nutScore;
 
-  return botDecision(ratio, position, betOutstanding, stackSize, betAmount);
+  return botDecision(
+    ratio,
+    position,
+    betOutstanding,
+    stackSize,
+    betAmount,
+    potSize
+  );
 };
 
 export const botFlop = (
@@ -476,7 +490,8 @@ export const botFlop = (
   position,
   stackSize,
   betOutstanding,
-  betAmount
+  betAmount,
+  potSize
 ) => {
   const [rank, score, hand] = evaluateFlop(botCards, flop);
   var cards = [];
@@ -484,7 +499,14 @@ export const botFlop = (
   const nutScore = getNutHand(cards);
   const ratio = score / nutScore;
 
-  return botDecision(ratio, position, betOutstanding, stackSize, betAmount);
+  return botDecision(
+    ratio,
+    position,
+    betOutstanding,
+    stackSize,
+    betAmount,
+    potSize
+  );
 };
 
 export const botPre = (
@@ -492,7 +514,8 @@ export const botPre = (
   position,
   stackSize,
   betOutstanding,
-  betAmount
+  betAmount,
+  potSize
 ) => {
   var chenValues = [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 6, 7, 8, 10];
   var score = 0;
@@ -524,7 +547,14 @@ export const botPre = (
     }
   }
   score = Math.max(0, Math.ceil(score) / 20);
-  return botDecision(score, position, betOutstanding, stackSize, betAmount);
+  return botDecision(
+    score,
+    position,
+    betOutstanding,
+    stackSize,
+    betAmount,
+    potSize
+  );
 };
 
 export const botDecision = (
@@ -532,14 +562,16 @@ export const botDecision = (
   position,
   betOutstanding,
   stackSize,
-  betAmount
+  betAmount,
+  potSize
 ) => {
   let decision = "";
   let raiseAmount = 0;
   if (betOutstanding === 0) {
     if (Math.random() < score) {
       decision = "r";
-      raiseAmount = Math.min(stackSize, betAmount * 2.5);
+      if (betAmount !== 0) raiseAmount = Math.min(stackSize, betAmount * 2.5);
+      else raiseAmount = Math.min(stackSize, potSize * 0.5);
     } else {
       decision = "k";
     }
@@ -550,26 +582,34 @@ export const botDecision = (
         else if (Math.random() < 0.5) decision = "c";
         else {
           decision = "r";
-          raiseAmount = Math.min(stackSize, betAmount * 2.5);
+          if (betAmount !== 0)
+            raiseAmount = Math.min(stackSize, betAmount * 2.5);
+          else raiseAmount = Math.min(stackSize, potSize * 0.5);
         }
       } else if (score < 0.35) {
         if (Math.random() < 0.1) decision = "f";
         else if (Math.random() < 0.4) decision = "c";
         else {
           decision = "r";
-          raiseAmount = Math.min(stackSize, betAmount * 2.5);
+          if (betAmount !== 0)
+            raiseAmount = Math.min(stackSize, betAmount * 2.5);
+          else raiseAmount = Math.min(stackSize, potSize * 0.5);
         }
       } else if (score < 0.5) {
         if (Math.random() < 0.3) decision = "c";
         else {
           decision = "r";
-          raiseAmount = Math.min(stackSize, betAmount * 2.5);
+          if (betAmount !== 0)
+            raiseAmount = Math.min(stackSize, betAmount * 2.5);
+          else raiseAmount = Math.min(stackSize, potSize * 0.5);
         }
       } else {
         if (Math.random() < 0.5) decision = "c";
         else {
           decision = "r";
-          raiseAmount = Math.min(stackSize, betAmount * 2.5);
+          if (betAmount !== 0)
+            raiseAmount = Math.min(stackSize, betAmount * 2.5);
+          else raiseAmount = Math.min(stackSize, potSize * 0.5);
         }
       }
     } else {
@@ -578,26 +618,34 @@ export const botDecision = (
         else if (Math.random() < 0.5) decision = "c";
         else {
           decision = "r";
-          raiseAmount = Math.min(stackSize, betAmount * 2.5);
+          if (betAmount !== 0)
+            raiseAmount = Math.min(stackSize, betAmount * 2.5);
+          else raiseAmount = Math.min(stackSize, potSize * 0.5);
         }
       } else if (score < 0.35) {
         if (Math.random() < 0.2) decision = "f";
         else if (Math.random() < 0.4) decision = "c";
         else {
           decision = "r";
-          raiseAmount = Math.min(stackSize, betAmount * 2.5);
+          if (betAmount !== 0)
+            raiseAmount = Math.min(stackSize, betAmount * 2.5);
+          else raiseAmount = Math.min(stackSize, potSize * 0.5);
         }
       } else if (score < 0.5) {
         if (Math.random() < 0.4) decision = "c";
         else {
           decision = "r";
-          raiseAmount = Math.min(stackSize, betAmount * 2.5);
+          if (betAmount !== 0)
+            raiseAmount = Math.min(stackSize, betAmount * 2.5);
+          else raiseAmount = Math.min(stackSize, potSize * 0.5);
         }
       } else {
         if (Math.random() < 0.5) decision = "c";
         else {
           decision = "r";
-          raiseAmount = Math.min(stackSize, betAmount * 2.5);
+          if (betAmount !== 0)
+            raiseAmount = Math.min(stackSize, betAmount * 2.5);
+          else raiseAmount = Math.min(stackSize, potSize * 0.5);
         }
       }
     }
