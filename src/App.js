@@ -164,9 +164,11 @@ class App extends Component {
         this.setState({ betOutstanding: 0 });
       });
 
+      // If player is in position
       if (players[0].position === 0) {
         players[0].turn = false;
         players[1].turn = true;
+        // If postflop, then deal next and have bot act
         if (this.state.dealFlop) {
           this.setState({ players }, () => {
             setTimeout(() => {
@@ -174,24 +176,29 @@ class App extends Component {
             }, 1500);
             setTimeout(() => {
               this.botAction();
-            }, 1500);
+            }, 3000);
           });
+          // If preflop
         } else {
+          // If bot raised then deal next
           if (players[1].betAmount !== this.state.bigBlind) {
             this.setState({ players }, () => {
               setTimeout(() => {
                 this.dealNext();
               }, 1500);
             });
+            // If bot did not raise bot has to act first
           } else {
             this.setState({ players }, () => {
               setTimeout(() => {
                 this.botAction();
-              }, 1500);
+              }, 3000);
             });
           }
         }
-      } else {
+      }
+      // If out of position then just deal next and have player go
+      else {
         players[0].turn = true;
         players[1].turn = false;
         this.setState({ players }, () => {
@@ -215,27 +222,32 @@ class App extends Component {
   handleRaise = (amount) => {
     var raiseAmount = parseInt(amount);
     const players = this.state.players;
-    // Can only raise max of stack size
-    if (raiseAmount > players[0].stackSize) raiseAmount = players[0].stackSize;
-    // Update state and various variables, then call botAction()
-    players[0].stackSize -= raiseAmount;
-    players[0].stackSize += players[0].betAmount;
-    players[0].viewText = !players[0].viewText;
-    players[0].turn = false;
-    players[1].turn = true;
-    const newBetOutstanding = raiseAmount - this.state.players[1].betAmount;
-    const newPotSize = this.state.potSize + raiseAmount - players[0].betAmount;
-    players[0].betAmount = raiseAmount;
+    // Raise amount must be at least min raise size
+    if (raiseAmount >= 2 * players[1].betAmount) {
+      // Can only raise max of stack size
+      if (raiseAmount > players[0].stackSize)
+        raiseAmount = players[0].stackSize;
+      // Update state and various variables, then call botAction()
+      players[0].stackSize -= raiseAmount;
+      players[0].stackSize += players[0].betAmount;
+      players[0].viewText = !players[0].viewText;
+      players[0].turn = false;
+      players[1].turn = true;
+      const newBetOutstanding = raiseAmount - this.state.players[1].betAmount;
+      const newPotSize =
+        this.state.potSize + raiseAmount - players[0].betAmount;
+      players[0].betAmount = raiseAmount;
 
-    this.setState({ betOutstanding: newBetOutstanding }, () => {
-      this.setState({ potSize: newPotSize }, () => {
-        this.setState({ players }, () => {
-          setTimeout(() => {
-            this.botAction();
-          }, 3000);
+      this.setState({ betOutstanding: newBetOutstanding }, () => {
+        this.setState({ potSize: newPotSize }, () => {
+          this.setState({ players }, () => {
+            setTimeout(() => {
+              this.botAction();
+            }, 3000);
+          });
         });
       });
-    });
+    }
   };
 
   // Handle fold from player
@@ -272,12 +284,14 @@ class App extends Component {
     this.setState({ players });
   };
 
-  // Method to handle bot action logic *CURRENTLY ONLY CHECKS WHEN NO BET AND CALLS WHEN THERE IS A BET*
+  // Method to handle bot action logic
   botAction = () => {
     let cards = [];
     cards.push(this.state.players[1].botCards[0].code);
     cards.push(this.state.players[1].botCards[1].code);
+    // If it is on river
     if (this.state.dealRiver) {
+      // Call botRiver() and perform resulting action
       const [decision, raiseAmount] = botRiver(
         this.state.players[1].botCards,
         this.state.flop,
@@ -290,19 +304,18 @@ class App extends Component {
         this.state.potSize
       );
       if (decision === "f") {
-        console.log("fold");
         this.botFold();
       } else if (decision === "c") {
         this.botCall();
-        console.log("call");
       } else if (decision === "k") {
         this.botCheck();
-        console.log("check");
       } else {
         this.botRaise(raiseAmount);
-        console.log("raise by " + raiseAmount);
       }
-    } else if (this.state.dealTurn) {
+    }
+    // If it is on turn
+    else if (this.state.dealTurn) {
+      // Call botTurn() and perform resulting action
       const [decision, raiseAmount] = botTurn(
         this.state.players[1].botCards,
         this.state.flop,
@@ -314,22 +327,21 @@ class App extends Component {
         this.state.potSize
       );
       if (decision === "f") {
-        console.log("fold");
         this.botFold();
       } else if (decision === "c") {
         this.botCall();
-        console.log("call");
       } else if (decision === "k") {
         this.botCheck();
-        console.log("check");
       } else {
         this.botRaise(raiseAmount);
-        console.log("raise by " + raiseAmount);
       }
-    } else if (this.state.dealFlop) {
+    }
+    // If it is on flop
+    else if (this.state.dealFlop) {
       for (var i = 0; i < 3; i++) {
         cards.push(this.state.flop[i].code);
       }
+      // Call botFlop() and perform resulting action
       const [decision, raiseAmount] = botFlop(
         this.state.players[1].botCards,
         this.state.flop,
@@ -340,19 +352,18 @@ class App extends Component {
         this.state.potSize
       );
       if (decision === "f") {
-        console.log("fold");
         this.botFold();
       } else if (decision === "c") {
         this.botCall();
-        console.log("call");
       } else if (decision === "k") {
         this.botCheck();
-        console.log("check");
       } else {
         this.botRaise(raiseAmount);
-        console.log("raise by " + raiseAmount);
       }
-    } else {
+    }
+    // If it is preflop
+    else {
+      // Call botPre() and perform resulting action
       const [decision, raiseAmount] = botPre(
         cards,
         this.state.players[1].position,
@@ -362,23 +373,20 @@ class App extends Component {
         this.state.potSize
       );
       if (decision === "f") {
-        console.log("fold");
         this.botFold();
       } else if (decision === "c") {
         this.botCall();
-        console.log("call");
       } else if (decision === "k") {
         this.botCheck();
-        console.log("check");
       } else {
         this.botRaise(raiseAmount);
-        console.log("raise by " + raiseAmount);
       }
     }
   };
 
+  // Method to handle bot fold
   botFold = () => {
-    // Update state and various variables
+    // Update state and various variables, give pot to player
     const players = this.state.players;
     players[0].turn = false;
     players[0].stackSize += this.state.potSize;
@@ -390,8 +398,10 @@ class App extends Component {
     });
   };
 
+  // Method to handle bot call
   botCall = () => {
     const players = this.state.players;
+    // Cannot call more than stack size
     const calledBet = Math.min(players[1].stackSize, this.state.betOutstanding);
     players[1].stackSize -= calledBet;
     players[1].betAmount = Math.min(players[1].stackSize, players[0].betAmount);
@@ -400,27 +410,36 @@ class App extends Component {
     this.setState({ potSize: newPotSize }, () => {
       this.setState({ players }, () => {
         this.setState({ betOutstanding: 0 }, () => {
+          // If postflop
           if (this.state.dealFlop) {
+            // If bot is BB then deal next and have bot go
             if (this.state.players[1].position === 1) {
               setTimeout(() => {
                 this.dealNext();
               }, 1500);
               setTimeout(() => {
                 this.botAction();
-              }, 1500);
-            } else {
+              }, 3000);
+            }
+            // Otherwise just deal next
+            else {
               setTimeout(() => {
                 this.dealNext();
               }, 1500);
             }
-          } else if (players[1].position === 1) {
+          }
+          // If preflop
+          // If bot in BB, deal next and have bot go
+          else if (players[1].position === 1) {
             setTimeout(() => {
               this.dealNext();
             }, 1500);
             setTimeout(() => {
               this.botAction();
-            }, 1500);
-          } else if (
+            }, 3000);
+          }
+          // If bot in D and player raised more than BB, just deal next
+          else if (
             players[1].position === 0 &&
             players[0].betAmount > this.state.bigBlind
           ) {
@@ -433,16 +452,20 @@ class App extends Component {
     });
   };
 
+  // Method to handle bot check
   botCheck = () => {
     const players = this.state.players;
+    // If postflop
     if (this.state.dealFlop) {
+      // If bot in BB, have player go
       if (this.state.players[1].position === 1) {
-        console.log("hit");
         players[0].turn = true;
         players[1].turn = false;
 
         this.setState({ players });
-      } else {
+      }
+      // If bot in D, deal next and have player go
+      else {
         players[0].turn = true;
         players[1].turn = false;
 
@@ -452,8 +475,9 @@ class App extends Component {
           }, 1500);
         });
       }
-    } else {
-      console.log("hit 1");
+    }
+    // If preflop, just deal flop
+    else {
       players[0].turn = false;
       players[1].turn = true;
 
@@ -463,31 +487,9 @@ class App extends Component {
         }, 1500);
       });
     }
-
-    // if (this.state.betOutstanding === 0 && players[1].position === 1) {
-    //   players[0].turn = true;
-    //   players[1].turn = false;
-    //   this.setState({ players });
-    //   if (!this.state.dealFlop) {
-    //     players[0].turn = false;
-    //     this.setState({ players }, () => {
-    //       setTimeout(() => {
-    //         this.dealNext();
-    //       }, 1500);
-    //     });
-    //   }
-    // }
-    // // Check if no bet and in position and deal next card(s)
-    // else if (this.state.betOutstanding === 0 && players[1].position === 0) {
-    //   players[0].turn = true;
-    //   players[1].turn = false;
-    //   this.setState({ players });
-    //   setTimeout(() => {
-    //     this.dealNext();
-    //   }, 1500);
-    // }
   };
 
+  // Method to handle bot raise
   botRaise = (raiseAmount) => {
     const players = this.state.players;
     players[1].stackSize -= raiseAmount;
@@ -532,35 +534,108 @@ class App extends Component {
 
   // Method to deal hole cards
   dealHoleCards = () => {
-    // Make sure no other cards are dealt and displayed besides hole cards
-    this.setState({ dealFlop: false }, () => {
-      this.setState({ dealTurn: false }, () => {
-        this.setState({ dealRiver: false }, () => {
-          this.setState({ showBotCards: false }, () => {
-            // Initialize pot size to just the blinds
-            const newPot = this.state.smallBlind + this.state.bigBlind;
-            const sb = this.state.smallBlind;
-            this.setState({ potSize: newPot }, () => {
-              this.setState({ betOutstanding: sb }, () => {
-                this.setState({ finishedHand: false }, () => {
-                  this.setState({ flop: [] }, () => {
-                    this.setState({ turn: [] }, () => {
-                      this.setState({ river: [] }, () => {
-                        this.setState({ dealHoleCards: true });
-                        this.setState({ showedCards: false });
-                        // Deal hole cards if API call returned deck with non zero length
-                        if (this.state.cards.length !== 0) {
-                          const playerCards = this.state.cards.slice(0, 2);
-                          const players = this.state.players;
-                          players[0].playerCards = playerCards;
+    const players = this.state.players;
+    if (players[0].stackSize > 0 && players[1].stackSize > 0) {
+      // Make sure no other cards are dealt and displayed besides hole cards
+      this.setState({ dealFlop: false }, () => {
+        this.setState({ dealTurn: false }, () => {
+          this.setState({ dealRiver: false }, () => {
+            this.setState({ showBotCards: false }, () => {
+              // Initialize pot size to just the blinds
+              let newPot = 0;
+              let bo = 0;
+              // If player in D
+              if (players[0].position === 0) {
+                // If both players have sufficient stack sizes then proceed as normal
+                if (
+                  players[0].stackSize >= this.state.smallBlind &&
+                  players[1].stackSize >= this.state.bigBlind
+                ) {
+                  newPot = this.state.smallBlind + this.state.bigBlind;
+                  bo = this.state.smallBlind;
+                }
+                // If player is too short, just put all in
+                else if (
+                  players[0].stackSize < this.state.smallBlind &&
+                  players[1].stackSize >= this.state.bigBlind
+                ) {
+                  newPot = players[0].stackSize + this.state.bigBlind;
+                  bo = this.state.bigBlind - players[0].stackSize;
+                }
+                // If bot is too short, just put all in
+                else if (
+                  players[0].stackSize >= this.state.smallBlind &&
+                  players[1].stackSize < this.state.bigBlind
+                ) {
+                  newPot = this.state.smallBlind + players[1].stackSize;
+                  bo = Math.max(
+                    0,
+                    players[1].stackSize - this.state.smallBlind
+                  );
+                }
+                // If both are too short, put both all in
+                else {
+                  newPot = players[0].stackSize + players[1].stackSize;
+                  bo = Math.max(0, players[1].stackSize - players[0].stackSize);
+                }
+              }
+              // If player in BB
+              else {
+                // If both players have sufficient stack sizes then proceed as normal
+                if (
+                  players[1].stackSize >= this.state.smallBlind &&
+                  players[0].stackSize >= this.state.bigBlind
+                ) {
+                  newPot = this.state.smallBlind + this.state.bigBlind;
+                  bo = this.state.smallBlind;
+                }
+                // If bot is too short, put bot all in
+                else if (
+                  players[1].stackSize < this.state.smallBlind &&
+                  players[0].stackSize >= this.state.bigBlind
+                ) {
+                  newPot = players[1].stackSize + this.state.bigBlind;
+                  bo = this.state.bigBlind - players[1].stackSize;
+                }
+                // If player is too short, put all in
+                else if (
+                  players[1].stackSize >= this.state.smallBlind &&
+                  players[0].stackSize < this.state.bigBlind
+                ) {
+                  newPot = this.state.smallBlind + players[0].stackSize;
+                  bo = Math.max(
+                    0,
+                    players[0].stackSize - this.state.smallBlind
+                  );
+                }
+                // If both are too short, put everyone all in
+                else {
+                  newPot = players[1].stackSize + players[0].stackSize;
+                  bo = Math.max(0, players[0].stackSize - players[1].stackSize);
+                }
+              }
+              this.setState({ potSize: newPot }, () => {
+                this.setState({ betOutstanding: bo }, () => {
+                  this.setState({ finishedHand: false }, () => {
+                    this.setState({ flop: [] }, () => {
+                      this.setState({ turn: [] }, () => {
+                        this.setState({ river: [] }, () => {
+                          this.setState({ dealHoleCards: true });
+                          this.setState({ showedCards: false });
+                          // Deal hole cards if API call returned deck with non zero length
+                          if (this.state.cards.length !== 0) {
+                            const playerCards = this.state.cards.slice(0, 2);
+                            const players = this.state.players;
+                            players[0].playerCards = playerCards;
 
-                          const botCards = this.state.cards.slice(2, 4);
-                          players[1].botCards = botCards;
+                            const botCards = this.state.cards.slice(2, 4);
+                            players[1].botCards = botCards;
 
-                          this.setState({ players });
-                          // Go to preflop betting
-                          this.preFlopBetting();
-                        }
+                            this.setState({ players });
+                            // Go to preflop betting
+                            this.preFlopBetting();
+                          }
+                        });
                       });
                     });
                   });
@@ -570,7 +645,8 @@ class App extends Component {
           });
         });
       });
-    });
+    } else {
+    }
   };
 
   // Method to handle preflop betting
@@ -579,20 +655,51 @@ class App extends Component {
     // If player is D, initialize stack sizes and bet amounts accordingly
     if (players[0].position === 0) {
       players[0].turn = true;
-      players[0].stackSize -= this.state.smallBlind;
-      players[0].betAmount = this.state.smallBlind;
-      players[1].betAmount = this.state.bigBlind;
-      players[1].stackSize -= this.state.bigBlind;
+      // Deal with short stacks, similar to dealHoleCards()
+      if (
+        players[0].stackSize >= this.state.smallBlind &&
+        players[1].stackSize >= this.state.bigBlind
+      ) {
+        players[0].stackSize -= this.state.smallBlind;
+        players[0].betAmount = this.state.smallBlind;
+        players[1].betAmount = this.state.bigBlind;
+        players[1].stackSize -= this.state.bigBlind;
+      } else if (players[0].stackSize < this.state.smallBlind) {
+        players[0].betAmount = players[0].stackSize;
+        players[0].stackSize = 0;
+        players[1].betAmount = this.state.bigBlind;
+        players[1].stackSize -= this.state.bigBlind;
+      } else if (players[1].stackSize < this.state.bigBlind) {
+        players[0].stackSize -= this.state.smallBlind;
+        players[0].betAmount = this.state.smallBlind;
+        players[1].betAmount = players[1].stackSize;
+        players[1].stackSize = 0;
+      }
       this.setState({ players });
     }
     // If player is BB, initialize stack sizes and bet amounts accordingly and call botAction()
     else {
       players[0].turn = false;
       players[1].turn = true;
-      players[0].betAmount = this.state.bigBlind;
-      players[0].stackSize -= this.state.bigBlind;
-      players[1].betAmount = this.state.smallBlind;
-      players[1].stackSize -= this.state.smallBlind;
+      if (
+        players[0].stackSize >= this.state.bigBlind &&
+        players[1].stackSize >= this.state.smallBlind
+      ) {
+        players[0].betAmount = this.state.bigBlind;
+        players[0].stackSize -= this.state.bigBlind;
+        players[1].betAmount = this.state.smallBlind;
+        players[1].stackSize -= this.state.smallBlind;
+      } else if (players[0].stackSize < this.state.bigBlind) {
+        players[0].betAmount = players[0].stackSize;
+        players[0].stackSize = 0;
+        players[1].betAmount = this.state.smallBlind;
+        players[1].stackSize -= this.state.smallBlind;
+      } else if (players[1].stackSize < this.state.smallBlind) {
+        players[0].stackSize -= this.state.bigBlind;
+        players[0].betAmount = this.state.bigBlind;
+        players[1].betAmount = players[1].stackSize;
+        players[1].stackSize = 0;
+      }
       this.setState({ players });
       setTimeout(() => {
         this.botAction();
@@ -602,13 +709,15 @@ class App extends Component {
 
   // Deal next card(s)
   dealNext = () => {
-    // Set betOutstanding to 0 and determine which street to deal and display
-    this.setState({ betOutstanding: 0 }, () => {
-      if (this.state.flop.length === 0) this.dealFlop();
-      else if (this.state.turn.length === 0) this.dealTurn();
-      else if (this.state.river.length === 0) this.dealRiver();
-      else if (!this.state.showedCards) this.showDown();
-    });
+    if (this.state.players[0].betAmount === this.state.players[1].betAmount) {
+      // Set betOutstanding to 0 and determine which street to deal and display
+      this.setState({ betOutstanding: 0 }, () => {
+        if (this.state.flop.length === 0) this.dealFlop();
+        else if (this.state.turn.length === 0) this.dealTurn();
+        else if (this.state.river.length === 0) this.dealRiver();
+        else if (!this.state.showedCards) this.showDown();
+      });
+    }
   };
 
   // Method to determine and deal flop
@@ -617,7 +726,10 @@ class App extends Component {
     const flop = this.state.cards.slice(4, 7);
     this.setState({ dealFlop: true });
     this.setState({ flop: flop }, () => {
-      if (this.state.players[1].position === 1) this.botAction();
+      if (this.state.players[1].position === 1)
+        setTimeout(() => {
+          this.botAction();
+        }, 3000);
     });
   };
 
@@ -627,7 +739,6 @@ class App extends Component {
     const turn = this.state.cards.slice(7, 8);
     this.setState({ dealTurn: true });
     this.setState({ turn: turn });
-    //if (this.state.players[1].position === 1) this.botAction();
   };
 
   // Method to determine and deal river
@@ -636,7 +747,6 @@ class App extends Component {
     const river = this.state.cards.slice(8, 9);
     this.setState({ dealRiver: true });
     this.setState({ river: river });
-    //if (this.state.players[1].position === 1) this.botAction();
   };
 
   // Method to deal with hand if it goes to showdown
@@ -710,12 +820,7 @@ class App extends Component {
     });
   };
 
-  breakTie = () => {
-    if (document.getElementById("playerHand").textContent === "Royal Flush") {
-      this.splitPot();
-    }
-  };
-
+  // Method to split pot in case of tie
   splitPot = () => {
     const players = this.state.players;
     if (this.state.potSize % 2 === 0) {

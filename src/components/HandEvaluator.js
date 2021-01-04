@@ -418,6 +418,7 @@ export const highCard = (cards) => {
   return score;
 };
 
+// Method to determine action for bot on river
 export const botRiver = (
   botCards,
   flop,
@@ -429,19 +430,24 @@ export const botRiver = (
   betAmount,
   potSize
 ) => {
-  const [rank, hand, score] = evaluateTurn(botCards, flop, turn);
+  // Evaluate bot cards
+  const [rank, hand, score] = evaluateRiver(botCards, flop, turn);
   var cards = [];
   for (var i = 0; i < 3; i++) cards.push(flop[i].code);
   cards.push(turn[0].code);
   cards.push(river[0].code);
   let nutScore = 0;
+  // Find nut hand
   for (var j = 0; j < 5; j++) {
     var tempCards = cards.slice();
     tempCards.splice(j, 1);
     if (getNutHand(tempCards) > nutScore) nutScore = getNutHand(tempCards);
   }
+
+  // Compare bot hand to nut hand
   const ratio = score / nutScore;
 
+  // Return bot decision based on ratio
   return botDecision(
     ratio,
     position,
@@ -452,6 +458,7 @@ export const botRiver = (
   );
 };
 
+// Method to determine action for bot on turn
 export const botTurn = (
   botCards,
   flop,
@@ -462,18 +469,23 @@ export const botTurn = (
   betAmount,
   potSize
 ) => {
+  // Evaluate bot cards
   const [rank, hand, score] = evaluateTurn(botCards, flop, turn);
   var cards = [];
   for (var i = 0; i < 3; i++) cards.push(flop[i].code);
   cards.push(turn[0].code);
   let nutScore = 0;
+  // Find nut hand
   for (var j = 0; j < 4; j++) {
     var tempCards = cards.slice();
     tempCards.splice(j, 1);
     if (getNutHand(tempCards) > nutScore) nutScore = getNutHand(tempCards);
   }
+
+  // Compare bot hand to nut hand
   const ratio = score / nutScore;
 
+  // Return bot decision based on ratio
   return botDecision(
     ratio,
     position,
@@ -484,6 +496,7 @@ export const botTurn = (
   );
 };
 
+// Method to determine action for bot on flop
 export const botFlop = (
   botCards,
   flop,
@@ -493,12 +506,16 @@ export const botFlop = (
   betAmount,
   potSize
 ) => {
+  // Evaluate bot cards
   const [rank, score, hand] = evaluateFlop(botCards, flop);
   var cards = [];
   for (var i = 0; i < 3; i++) cards.push(flop[i].code);
+  // Get nut hand
   const nutScore = getNutHand(cards);
+  // Compare bot hand to nut hand
   const ratio = score / nutScore;
 
+  // Return bot decision based on ratio
   return botDecision(
     ratio,
     position,
@@ -509,6 +526,7 @@ export const botFlop = (
   );
 };
 
+// Method to determine action for bot preflop
 export const botPre = (
   cards,
   position,
@@ -517,9 +535,9 @@ export const botPre = (
   betAmount,
   potSize
 ) => {
+  // Calculate strength of hand using Chen formula
   var chenValues = [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 6, 7, 8, 10];
   var score = 0;
-  console.log(cards);
   if (cards[0].substr(0, 1) === cards[1].substr(0, 1)) {
     score = Math.min(5, 2 * chenValues[values.indexOf(cards[0].substr(0, 1))]);
   } else {
@@ -546,7 +564,10 @@ export const botPre = (
       if (gap <= 2) score += 1;
     }
   }
+  // Normalize score by dividing by max amount (pocket aces = 20)
   score = Math.max(0, Math.ceil(score) / 20);
+
+  // Return bot decision based on chen formula score
   return botDecision(
     score,
     position,
@@ -557,6 +578,7 @@ export const botPre = (
   );
 };
 
+// Method to determine bot decision given various variables and factors
 export const botDecision = (
   score,
   position,
@@ -565,18 +587,28 @@ export const botDecision = (
   betAmount,
   potSize
 ) => {
+  // 'decision' will hold bot action
+  // 'raiseAmount' will hold raise amount if bot decides to raise
   let decision = "";
   let raiseAmount = 0;
+  // If no betOutstanding
   if (betOutstanding === 0) {
+    // Generate random number to determine whether to raise based on score, lower the score the lower the likelihood of raising
     if (Math.random() < score) {
       decision = "r";
       if (betAmount !== 0) raiseAmount = Math.min(stackSize, betAmount * 2.5);
       else raiseAmount = Math.min(stackSize, potSize * 0.5);
-    } else {
+    }
+    // Otherwise just check
+    else {
       decision = "k";
     }
-  } else {
+  }
+  // If there is a bet
+  else {
+    // If bot is in position
     if (position === 0) {
+      // Break up decision based on different thresholds for score, and generate random numbers using different weighted probabilities based on those scores to determine whether to fold, call, or raise *CURRENTLY ONLY RAISES BY A CONSTANT AMOUNT*
       if (score < 0.15) {
         if (Math.random() < 0.6) decision = "f";
         else if (Math.random() < 0.5) decision = "c";
@@ -612,7 +644,9 @@ export const botDecision = (
           else raiseAmount = Math.min(stackSize, potSize * 0.5);
         }
       }
-    } else {
+    }
+    // If bot in BB
+    else {
       if (score < 0.15) {
         if (Math.random() < 0.7) decision = "f";
         else if (Math.random() < 0.5) decision = "c";
@@ -653,6 +687,7 @@ export const botDecision = (
   return [decision, raiseAmount];
 };
 
+// Method to get nut hand at any juncture
 export const getNutHand = (cards) => {
   var score = 0;
   var vals = [];
@@ -662,14 +697,18 @@ export const getNutHand = (cards) => {
 
   const [straightPotential, straightScore] = hasStraightPotential(cards);
 
+  // Check for various possible hands, score each one, and return the highest score = nut hand
   if (hasFlushPotential(cards)) {
     if (straightPotential) {
       if (straightScore === 50) {
+        // Royal flush
         score += rank.indexOf("Royal Flush") * 1000000 + straightScore;
       } else {
+        // Straight flush
         score += rank.indexOf("Straight Flush") * 1000000 + straightScore;
       }
     } else {
+      // Flush
       score += rank.indexOf("Flush") * 1000000;
       for (var i = 0; i < cards.length; i++) {
         score += values.indexOf(cards[i].substr(0, 1));
@@ -683,8 +722,10 @@ export const getNutHand = (cards) => {
         newValues[newValues.length - 1] + newValues[newValues.length - 2];
     }
   } else if (straightPotential) {
+    // Straight
     score += rank.indexOf("Straight") * 1000000 + (straightScore + 10) / 5;
   } else if (isThreeOfTheSame(cards)) {
+    // Four of a kind
     score +=
       rank.indexOf("Four of a kind") * 1000000 +
       values.indexOf(cards[0].substr(0, 1)) * 1000;
@@ -694,6 +735,7 @@ export const getNutHand = (cards) => {
       score += 526;
     }
   } else if (hasPair(cards)) {
+    // Four of a kind
     score += rank.indexOf("Four of a kind") * 1000000;
     var vals = [];
     const fourOfAKind = 0;
@@ -716,6 +758,7 @@ export const getNutHand = (cards) => {
     vals.sort(function (a, b) {
       return a - b;
     });
+    // Three of a kind
     score += rank.indexOf("Three of a kind") * 1000000;
     vals.push(vals[vals.length - 1]);
     vals.push(vals[vals.length - 1]);
@@ -730,6 +773,7 @@ export const getNutHand = (cards) => {
   return score;
 };
 
+// Method to determine if all 3 cards are the same
 export const isThreeOfTheSame = (cards) => {
   for (var i = 0; i < 2; i++) {
     if (cards[i].substr(0, 1) !== cards[i + 1].substr(0, 1)) return false;
@@ -737,6 +781,7 @@ export const isThreeOfTheSame = (cards) => {
   return true;
 };
 
+// Method to determine if there is a pair among the three cards
 export const hasPair = (cards) => {
   for (var i = 0; i < 2; i++) {
     if (cards[i].substr(0, 1) === cards[i + 1].substr(0, 1)) return true;
@@ -744,6 +789,7 @@ export const hasPair = (cards) => {
   return false;
 };
 
+// Method to determine if all three cards have same suit
 export const hasFlushPotential = (cards) => {
   for (var i = 0; i < 2; i++) {
     if (cards[i].substr(1, 2) !== cards[i + 1].substr(1, 2)) return false;
@@ -751,6 +797,7 @@ export const hasFlushPotential = (cards) => {
   return true;
 };
 
+// Method to determine if it is possible to have a straight with the given three cards
 export const hasStraightPotential = (cards) => {
   var indices = [];
   for (var i = 0; i < cards.length; i++) {
