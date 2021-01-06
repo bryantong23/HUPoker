@@ -7,8 +7,8 @@ class Card extends Component {
       <React.Fragment>
         <img
           src={this.props.src}
-          width="150"
-          heigth="150"
+          width="120"
+          heigth="120"
           alt={this.props.alt}
         ></img>
       </React.Fragment>

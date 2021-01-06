@@ -431,7 +431,7 @@ export const botRiver = (
   potSize
 ) => {
   // Evaluate bot cards
-  const [rank, hand, score] = evaluateRiver(botCards, flop, turn);
+  const [rank, hand, score] = evaluateRiver(botCards, flop, turn, river);
   var cards = [];
   for (var i = 0; i < 3; i++) cards.push(flop[i].code);
   cards.push(turn[0].code);
@@ -831,3 +831,22 @@ export const hasStraightPotential = (cards) => {
   }
   return [false, -1];
 };
+
+// // Method to determine if there is a straight draw
+// export const hasStraightDraw = (cards) => {
+//   // Only look for draw if there is no straight already
+//   if (!isStraight(cards)){
+//     var indices = [];
+//     for (var i = 0; i < cards.length; i++){
+//       indices.push(values.indexOf(cards[i].substr(0, 1)));
+//     }
+//     indices.sort(function (a, b) {
+//       return a - b;
+//     });
+//     let gap = 0;
+//     for (var j = 0; j < indices.length - 1; j++){
+//       gap += indices[j + 1] - indices[j];
+//     }
+
+//   }
+// }

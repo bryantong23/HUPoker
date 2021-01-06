@@ -19,7 +19,7 @@ class PlayerBanner extends Component {
             {this.props.player.id === 1 ? (
               <button
                 onClick={() => this.props.onCheck()}
-                className="btn btn-primary btn-sm m-2"
+                className={this.getButtonClasses()}
                 disabled={!this.props.player.turn}
               >
                 Check
@@ -30,7 +30,7 @@ class PlayerBanner extends Component {
             {this.props.player.id === 1 ? (
               <button
                 onClick={() => this.props.onCall()}
-                className="btn btn-primary btn-sm m-2"
+                className={this.getButtonClasses()}
                 disabled={!this.props.player.turn}
               >
                 Call
@@ -41,7 +41,7 @@ class PlayerBanner extends Component {
             {this.props.player.id === 1 ? (
               <button
                 onClick={() => this.props.onRaise()}
-                className="btn btn-primary btn-sm m-2"
+                className={this.getButtonClasses()}
                 disabled={!this.props.player.turn}
               >
                 Raise
@@ -64,30 +64,23 @@ class PlayerBanner extends Component {
             {this.props.player.id === 1 ? (
               <button
                 onClick={() => this.props.onFold()}
-                className="btn btn-primary btn-sm m-2"
+                className={this.getButtonClasses()}
                 disabled={!this.props.player.turn}
               >
                 Fold
               </button>
             ) : null}
           </span>
-          <p id="betAmount">
-            {this.props.player.betAmount === 0
-              ? null
-              : this.props.player.betAmount}
-          </p>
+          <p id="betAmount">{"Bet Amount: " + this.props.player.betAmount}</p>
         </div>
       </React.Fragment>
     );
   }
 
-  // getButtonClasses() {
-  //   let classes = "btn btn-";
-  //   classes += this.props.player.turn
-  //     ? "danger btn-sm m-2"
-  //     : "primary btn-sm m-2";
-  //   return classes;
-  // }
+  getButtonClasses() {
+    if (this.props.player.turn) return "action";
+    else return "disabled";
+  }
 }
 
 export default PlayerBanner;

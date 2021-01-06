@@ -1,4 +1,4 @@
-.App {
+/* .App {
   text-align: center;
 }
 
@@ -35,4 +35,169 @@
   to {
     transform: rotate(360deg);
   }
+} */
+
+h1 {
+  position: fixed;
+  top: 0%;
+  left: 50%;
+  font-family: "Trebuchet MS", Helvetica, sans-serif;
+}
+
+header {
+  top: 5%;
+  left: 50%;
+  height: auto;
+  width: 100%;
+}
+
+div.settings {
+  position: fixed;
+  top: 5%;
+}
+
+div.player {
+  position: fixed;
+  top: 5%;
+  left: 68%;
+  max-height: 100%;
+}
+
+div.board {
+  position: fixed;
+  top: 20%;
+  left: 30%;
+  width: 35%;
+}
+
+div.botCards {
+  position: fixed;
+  top: 70%;
+  left: 40%;
+  width: 20%;
+}
+
+button.update {
+  box-shadow: 0px 7px 10px -7px #276873;
+  background: linear-gradient(to bottom, #599bb3 5%, #408c99 100%);
+  background-color: #599bb3;
+  border-radius: 8px;
+  display: inline-block;
+  cursor: pointer;
+  color: #ffffff;
+  font-family: Arial;
+  font-size: 15px;
+  font-weight: bold;
+  padding: 7px 7px;
+  text-decoration: none;
+  text-shadow: 0px 1px 0px #3d768a;
+  margin: 3px;
+  height: 38px;
+  width: 120px;
+}
+button.update:hover {
+  background: linear-gradient(to bottom, #408c99 5%, #599bb3 100%);
+  background-color: #408c99;
+}
+button.update:active {
+  position: relative;
+  top: 1px;
+}
+
+button.start {
+  box-shadow: 0px 7px 10px -7px #276873;
+  background: linear-gradient(to bottom, #599bb3 5%, #408c99 100%);
+  background-color: #599bb3;
+  border-radius: 8px;
+  display: inline-block;
+  cursor: pointer;
+  color: #ffffff;
+  font-family: Arial;
+  font-size: 15px;
+  font-weight: bold;
+  padding: 7px 7px;
+  text-decoration: none;
+  text-shadow: 0px 1px 0px #3d768a;
+  margin: 20px 3px 20px 3px;
+  height: 38px;
+  width: 120px;
+}
+
+button.start:hover {
+  background: linear-gradient(to bottom, #408c99 5%, #599bb3 100%);
+  background-color: #408c99;
+}
+button.start:active {
+  position: relative;
+  top: 1px;
+}
+
+b {
+  padding: 8px;
+}
+
+label {
+  padding: 8px;
+}
+
+button.action {
+  box-shadow: 0px 3px 23px -5px #276873;
+  background: linear-gradient(to bottom, #599bb3 5%, #408c99 100%);
+  background-color: #599bb3;
+  border-radius: 24px;
+  display: inline-block;
+  cursor: pointer;
+  color: #ffffff;
+  font-family: Arial;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 5px 18px;
+  text-decoration: none;
+  text-shadow: 0px 0px 0px #46b5d6;
+  margin: 10px;
+}
+
+button.action:hover {
+  background: linear-gradient(to bottom, #408c99 5%, #599bb3 100%);
+  background-color: #408c99;
+}
+button.action:active {
+  position: relative;
+  top: 1px;
+}
+
+button.disabled {
+  box-shadow: 0px 3px 23px -5px #276873;
+  background: linear-gradient(to bottom, #ededed 5%, #dfdfdf 100%);
+  background-color: #ededed;
+  border-radius: 24px;
+  display: inline-block;
+  cursor: pointer;
+  color: #000c0e;
+  font-family: Arial;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 5px 18px;
+  text-decoration: none;
+  text-shadow: 0px 0px 0px #46b5d6;
+  margin: 10px;
+}
+
+button.deal {
+  box-shadow: 0px 7px 10px -7px #276873;
+  background: linear-gradient(to bottom, #599bb3 5%, #408c99 100%);
+  background-color: #599bb3;
+  border-radius: 8px;
+  display: inline-block;
+  cursor: pointer;
+  color: #ffffff;
+  font-family: Arial;
+  font-size: 15px;
+  font-weight: bold;
+  padding: 7px 7px;
+  text-decoration: none;
+  text-shadow: 0px 1px 0px #3d768a;
+  margin: 20px 3px 20px 3px;
+  height: 38px;
+  width: 150px;
 }

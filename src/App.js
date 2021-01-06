@@ -33,7 +33,7 @@ class App extends Component {
           viewText: false,
           playerCards: [],
           position: 0,
-          turn: false,
+          turn: true,
           betAmount: 0,
         },
         {
@@ -42,7 +42,7 @@ class App extends Component {
           stackSize: 1000,
           botCards: [],
           position: 1,
-          turn: false,
+          turn: true,
           betAmount: 0,
         },
       ],
@@ -655,6 +655,7 @@ class App extends Component {
     // If player is D, initialize stack sizes and bet amounts accordingly
     if (players[0].position === 0) {
       players[0].turn = true;
+      players[1].turn = false;
       // Deal with short stacks, similar to dealHoleCards()
       if (
         players[0].stackSize >= this.state.smallBlind &&
@@ -803,7 +804,7 @@ class App extends Component {
                 return;
               });
             });
-            // If both players had same main hand, look for kickers
+            // If tie, then split pot
           } else {
             this.splitPot();
             const players = this.state.players;
@@ -860,34 +861,28 @@ class App extends Component {
       <React.Fragment>
         <header>
           <h1>HUPoker</h1>
-          <div>
+          <div className="settings">
             <b>Game settings:</b>
             <br></br>
-            <label htmlFor="sb">Small blind:</label>
+            <label htmlFor="sb">Small blind: </label>
             <input type="text" id="sb" name="sb" defaultValue="5"></input>
             <br></br>
-            <label htmlFor="bb">Big blind:</label>
+            <label htmlFor="bb">Big blind: </label>
             <input type="text" id="bb" name="bb" defaultValue="10"></input>
             <br></br>
-            <button
-              className="btn btn-warning btn-sm m-2"
-              onClick={this.updateBlinds}
-            >
+            <button className="update" onClick={this.updateBlinds}>
               Update Blinds
             </button>
             <br></br>
-            <label htmlFor="ss">Stack size:</label>
+            <label htmlFor="ss">Stack size: </label>
             <input type="text" id="ss" name="ss" defaultValue="1000"></input>
             <br></br>
-            <button
-              className="btn btn-warning btn-sm m-2"
-              onClick={this.updateStack}
-            >
+            <button className="update" onClick={this.updateStack}>
               Update Stack
             </button>
             <br></br>
             <button
-              className="btn btn-primary btn-sm m-2"
+              className="start"
               disabled={this.state.startedGame ? 1 : 0}
               onClick={this.startGame}
             >
@@ -895,51 +890,53 @@ class App extends Component {
             </button>
             <span>
               {this.state.finishedHand ? (
-                <button
-                  onClick={() => this.dealNextHand()}
-                  className="btn btn-primary btn-sm m-2"
-                >
+                <button onClick={() => this.dealNextHand()} className="deal">
                   Deal Next Hand
                 </button>
               ) : null}
             </span>
           </div>
         </header>
-        <main className="container">
-          <Players
-            players={this.state.players}
-            onCheck={this.handleCheck}
-            onCall={this.handleCall}
-            onRaise={this.handleClickRaise}
-            onFold={this.handleFold}
-            onRaised={this.handleRaise}
-          />
-          <p id="pot">{"Pot size: " + this.state.potSize}</p>
-        </main>
-        <span id="playerHand">
-          {this.state.dealHoleCards ? (
-            <Hand
-              holeCards={this.state.players[0].playerCards}
-              flop={this.state.flop}
-              turn={this.state.turn}
-              river={this.state.river}
-              dealHoleCards={this.state.dealHoleCards}
+        <div className="player">
+          <main className="container">
+            <Players
+              players={this.state.players}
+              onCheck={this.handleCheck}
+              onCall={this.handleCall}
+              onRaise={this.handleClickRaise}
+              onFold={this.handleFold}
+              onRaised={this.handleRaise}
+            />
+            <p id="pot">{"Pot size: " + this.state.potSize}</p>
+          </main>
+          <span id="playerHand">
+            {this.state.dealHoleCards ? (
+              <Hand
+                holeCards={this.state.players[0].playerCards}
+                flop={this.state.flop}
+                turn={this.state.turn}
+                river={this.state.river}
+                dealHoleCards={this.state.dealHoleCards}
+                dealFlop={this.state.dealFlop}
+                dealTurn={this.state.dealTurn}
+                dealRiver={this.state.dealRiver}
+              ></Hand>
+            ) : null}
+          </span>
+          <HoleCards holeCards={this.state.players[0].playerCards}></HoleCards>
+          <div className="board">
+            <Board
               dealFlop={this.state.dealFlop}
               dealTurn={this.state.dealTurn}
               dealRiver={this.state.dealRiver}
-            ></Hand>
-          ) : null}
-        </span>
-        <HoleCards holeCards={this.state.players[0].playerCards}></HoleCards>
-        <Board
-          dealFlop={this.state.dealFlop}
-          dealTurn={this.state.dealTurn}
-          dealRiver={this.state.dealRiver}
-          flop={this.state.flop}
-          turn={this.state.turn}
-          river={this.state.river}
-        ></Board>
-        <div>
+              flop={this.state.flop}
+              turn={this.state.turn}
+              river={this.state.river}
+            ></Board>
+          </div>
+        </div>
+
+        <div className="botCards">
           <span id="botHand">
             {this.state.showBotCards ? (
               <Hand
